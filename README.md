@@ -1,4 +1,4 @@
-#cellular-automata
+# cellular-automata
 
 ## Explanation
 - The purpose of this project was to serve as an excuse for using C code while building something fairly well-known (to limit scope), visual, and interactive. I just happened to stumble-upon Raylib 3.0 when watching videos on YouTube from OneLoneCoder (javidx9) and Gamefromscratch. This framework was exactly what I was looking for. It's incredibly simple; all of the code is laid bare. It can be cross-compiled for many different platforms. There are a plethora of online examples (and I THRIVE on examples; they're how I survived my undergraduate degree), and these examples are actual demonstrations with the very simple code powering them.
