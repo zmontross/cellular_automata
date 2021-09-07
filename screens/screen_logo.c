@@ -26,7 +26,7 @@
 #include "raylib.h"
 #include "screens.h"
 #include "raygui.h"
-#include "ricons.h"
+// #include "ricons.h"
 
 //----------------------------------------------------------------------------------
 // Global Variables Definition (local to this module)

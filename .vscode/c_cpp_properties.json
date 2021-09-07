@@ -1,10 +1,15 @@
 {
     "configurations": [
         {
-            "name": "Win32",
+            "name": "Linux",
             "includePath": [
-                "E:/Cpp/raylib/raylib-master/src/**",
-                "E:/Cpp/raylib/raygui-master/src/**",
+                "/mnt/FastStorage_1/Development/Cpp/raylib/src/**",
+                "/mnt/FastStorage_1/Development/Cpp/raylib/src/external/**",
+                "/mnt/FastStorage_1/Development/Cpp/raylib/src/extras/**",
+                "/mnt/FastStorage_1/Development/Cpp/raygui/src/**",
+                "/usr/include/**",
+                "/usr/local/lib/**",
+                "/usr/local/include/**",
                 "${workspaceFolder}/**"
             ],
             "defines": [
@@ -14,10 +19,11 @@
                 "GRAPHICS_API_OPENGL_33",
                 "PLATFORM_DESKTOP"
             ],
-            "compilerPath": "E:/Cpp/mingw-w64/mingw64/bin/gcc.exe",
-            "cStandard": "c99",
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
             "cppStandard": "c++14",
-            "intelliSenseMode": "gcc-x64"
+            "intelliSenseMode": "clang-x64"
+
         }
     ],
     "version": 4

@@ -35,7 +35,7 @@ extern "C" {            // Prevents name mangling of functions
 #include "raylib.h"
 #define RAYGUI_SUPPORT_ICONS
 #include "raygui.h"
-#include "ricons.h"
+// #include "ricons.h"
 
 
 
