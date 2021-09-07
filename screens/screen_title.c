@@ -26,7 +26,11 @@
 #include "raylib.h"
 #include "screens.h"
 #include "raygui.h"
-#include "ricons.h"
+// #include "ricons.h"
+
+#define RICON_OK_TICK 112
+#define RICON_CROSS 113
+#define RICON_HELP 193
 
 //----------------------------------------------------------------------------------
 // Global Variables Definition (local to this module)

@@ -89,16 +89,18 @@
 
 #include <stdio.h>
 #include <string.h>
+
 #include "raylib.h"
-#include "screens.h"
-#include "gameplay_typedefs.h"
 #define RAYGUI_SUPPORT_ICONS
 #include "raygui.h"
-#include "ricons.h"
+#include "screens.h"
+#include "gameplay_typedefs.h"
+// #include "ricons.h"
 #include "raymath.h"
 
 
-
+#define RICON_GEAR_BIG 142
+#define RICON_HELP 193
 
 //----------------------------------------------------------------------------------
 // Global Variables Definition (local to this module)
@@ -731,7 +733,8 @@ void DrawGameplayScreen(void)
 
                         for(int k=1; k<=CURSOR_GLOW_RADIUS; k++){
                             if(CheckCollisionCircleRec(mousePosWorld, k*sgMainGrid.tileSizePx, gridTileRect)){
-                                fadeFactor = k + GetRandomValue(-0.25f, 0.25f);
+                                // fadeFactor = k + GetRandomValue(-0.25f, 0.25f);
+                                fadeFactor = k + 0.25 * GetRandomValue(-1, 1);
                                 colorFactor = k * 100 / CURSOR_GLOW_RADIUS;
                                 break;
                             }
@@ -934,7 +937,7 @@ void DrawGameplayScreen(void)
 
 
     // Show count of alive tiles.
-    if(guiShowAlive) DrawText(FormatText("%d Alive", sgMainGrid.active), 20, 40, 20, GREEN);
+    if(guiShowAlive) DrawText(TextFormat("%d Alive", sgMainGrid.active), 20, 40, 20, GREEN);
 
 
     // Toolbox Button
@@ -1177,17 +1180,17 @@ void DrawMenuOverlay(){
     DrawRectangleRec(rectMenuOverlay, Fade(BLACK, 0.4f));
     DrawText("Menu", rectMenuOverlay.x + (rectMenuOverlay.width / 2) - (MeasureText("Menu", 20) / 2), rectMenuOverlay.y + 20, 20, GRAY);
     
-    showExitConfirmation == true? 0 : GuiSetTooltip("Close this window.");
+    // showExitConfirmation == true? 0 : GuiSetTooltip("Close this window.");
     if (GuiButton((Rectangle){ rectMenuOverlay.x + 20, rectMenuOverlay.y + 40, gd.bWidths.full, gd.bHeights.full }, "Return")) showMenuOverlay = false;
-    GuiClearTooltip();
+    // GuiClearTooltip();
 
-    showExitConfirmation == true? 0 : GuiSetTooltip("Update resolution.");
+    // showExitConfirmation == true? 0 : GuiSetTooltip("Update resolution.");
     if (GuiButton((Rectangle){ rectMenuOverlay.x + 20, rectMenuOverlay.y + 40 + 5 + gd.bHeights.full*1, gd.bWidths.full, gd.bHeights.full }, "Options")) finishScreen = 2;
-    GuiClearTooltip();
+    // GuiClearTooltip();
 
-    showExitConfirmation == true? 0 : GuiSetTooltip("Exit, and return to title screen.");
+    // showExitConfirmation == true? 0 : GuiSetTooltip("Exit, and return to title screen.");
     if (GuiButton((Rectangle){ rectMenuOverlay.x + 20, rectMenuOverlay.y + 40 + (5*2) + gd.bHeights.full*2, gd.bWidths.full, gd.bHeights.full }, "Exit to Menu")) showExitConfirmation = true;
-    GuiClearTooltip();
+    // GuiClearTooltip();
     showExitConfirmation == true? GuiEnable() : GuiDisable();
 
     if(showExitConfirmation){

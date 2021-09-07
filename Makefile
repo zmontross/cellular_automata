@@ -39,20 +39,20 @@
 
 # Define required raylib variables
 PROJECT_NAME       ?= cellular_automata
-RAYLIB_VERSION     ?= 2.5.0
-RAYLIB_API_VERSION ?= 251
-RAYLIB_PATH        ?= E:/Cpp/raylib/raylib-master
-RAYGUI_PATH        ?= E:/Cpp/raylib/raygui-master
+RAYLIB_VERSION     ?= 3.8.0
+RAYLIB_PATH        ?= /usr/local
 
-# Define compiler path on Windows
-COMPILER_PATH      ?= E:/Cpp/mingw-w64/mingw64/bin
+RAYLIB_INSTALL_PATH   ?= /usr/local/lib
+RAYLIB_H_INSTALL_PATH ?= /usr/local/include
+
+PLATFORM_LINUX_INCLUDES ?= /usr/include
 
 # Define default C compiler: gcc
 # NOTE: define g++ compiler if using C++
-CC = gcc
+CC = clang
 
-# Define default make program: Mingw32-make
-MAKE = mingw32-make
+# Define default make program
+MAKE = make
 
 # Define default options
 # One of PLATFORM_DESKTOP, PLATFORM_RPI, PLATFORM_ANDROID, PLATFORM_WEB
@@ -82,12 +82,10 @@ BUILD_MODE            ?= RELEASE
 USE_EXTERNAL_GLFW     ?= FALSE
 
 # Determine PLATFORM_OS in case PLATFORM_DESKTOP selected
-PLATFORM_OS=WINDOWS
+PLATFORM_OS=LINUX
 export PATH := $(COMPILER_PATH):$(PATH)
 
-# Define raylib release directory for compiled library.
-# RAYLIB_RELEASE_PATH points to provided binaries or your freshly built version
-RAYLIB_RELEASE_PATH 	?= $(RAYLIB_PATH)/src
+
 
 
 
@@ -110,11 +108,18 @@ RAYLIB_RELEASE_PATH 	?= $(RAYLIB_PATH)/src
 #CFLAGS += -Wextra -Wmissing-prototypes -Wstrict-prototypes
 CFLAGS += -Wall -std=c99 -D_DEFAULT_SOURCE -Wno-missing-braces
 ifeq ($(BUILD_MODE),DEBUG)
-    CFLAGS += -g
+    CFLAGS += -g -O0
 else
     CFLAGS += -s -O1
 endif
 
+ifeq ($(RAYLIB_LIBTYPE),STATIC)
+    CFLAGS += -D_DEFAULT_SOURCE
+endif
+ifeq ($(RAYLIB_LIBTYPE),SHARED)
+    # Explicitly enable runtime link to libraylib.so
+    CFLAGS += -Wl,-rpath,$(EXAMPLE_RUNTIME_PATH)
+endif
 
 # # # # # # # # # # # # #
 #                       #
@@ -124,7 +129,8 @@ endif
 
 # Define include paths for required headers
 # NOTE: Several external required libraries (stb and others)
-INCLUDE_PATHS = -I. -I$(RAYLIB_PATH)/src -I$(RAYLIB_PATH)/src/external -I$(RAYGUI_PATH)/src
+INCLUDE_PATHS = -I$(PLATFORM_LINUX_INCLUDES)
+INCLUDE_PATHS += -I. -I$(RAYLIB_H_INSTALL_PATH) -I$(RAYLIB_INSTALL_PATH)
 
 
 # # # # # # # # # # # # #
@@ -134,25 +140,35 @@ INCLUDE_PATHS = -I. -I$(RAYLIB_PATH)/src -I$(RAYLIB_PATH)/src/external -I$(RAYGU
 # # # # # # # # # # # # #
 
 # Define library paths containing required libs.
-LDFLAGS = -L. -L$(RAYLIB_RELEASE_PATH) -L$(RAYLIB_PATH)/src
+LDFLAGS = -L. -L$(RAYLIB_INSTALL_PATH)
 
-ifeq ($(PLATFORM_OS),WINDOWS)
-    # resource file contains windows executable icon and properties
-    #####LDFLAGS += $(RAYLIB_PATH)/src/raylib.rc.data 
-    # -Wl,--subsystem,windows hides the console window
-    ifeq ($(BUILD_MODE), RELEASE)
-        LDFLAGS += -Wl,--subsystem,windows
-    endif
-endif
+
+# # # # # # # # # # # # #
+#                       #
+#        LDLIBS         #
+#                       #
+# # # # # # # # # # # # #
 
 # Define any libraries required on linking
 # if you want to link libraries (libname.so or libname.a), use the -lname
-ifeq ($(PLATFORM_OS),WINDOWS)
-    # Libraries for Windows desktop compilation
-    # NOTE: WinMM library required to set high-res timer resolution
-    LDLIBS = -lraylib -lopengl32 -lgdi32 -lwinmm
-    # Required for physac examples
-    LDLIBS += -static -lpthread
+ifeq ($(PLATFORM_OS),LINUX)
+    # Libraries for Debian GNU/Linux desktop compiling
+    # NOTE: Required packages: libegl1-mesa-dev
+    LDLIBS = -lraylib -lGL -lm -lpthread -ldl -lrt
+    
+    # On X11 requires also below libraries
+    LDLIBS += -lX11
+    # NOTE: It seems additional libraries are not required any more, latest GLFW just dlopen them
+    #LDLIBS += -lXrandr -lXinerama -lXi -lXxf86vm -lXcursor
+    
+    # On Wayland windowing system, additional libraries requires
+    ifeq ($(USE_WAYLAND_DISPLAY),TRUE)
+        LDLIBS += -lwayland-client -lwayland-cursor -lwayland-egl -lxkbcommon
+    endif
+    # Explicit link to libc
+    ifeq ($(RAYLIB_LIBTYPE),SHARED)
+        LDLIBS += -lc
+    endif
 endif
 
 
@@ -176,11 +192,9 @@ $(PROJECT_NAME): $(OBJS)
 %.o: %.c
 	$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDE_PATHS) -D$(PLATFORM)
 
-# Clean everything
 clean:
-	del *.o *.exe /s
-
-
+	find -type f -executable | xargs file -i | grep -E 'x-object|x-archive|x-sharedlib|x-executable' | cut -d ':' --complement -f 2- | xargs rm -fv
+	rm -fv ./*.o
 	@echo Cleaning done
 
 re: clean all

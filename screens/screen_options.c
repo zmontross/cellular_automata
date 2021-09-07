@@ -32,7 +32,7 @@
 #include "raylib.h"
 #include "screens.h"
 #include "raygui.h"
-#include "ricons.h" // <----- THIS FUCKER RIGHT HERE
+// #include "ricons.h" // <----- THIS FUCKER RIGHT HERE
 
 #define N_RESOLUTIONS 9
 

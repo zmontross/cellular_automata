@@ -1,11 +1,15 @@
 
+#include <stdio.h>
+#include <string.h>
+
 #include "raylib.h"
+#include "raygui.h"
 #include "screens.h"
-//#include "raygui.h"
+
 #define RAYGUI_IMPLEMENTATION
 #define RAYGUI_SUPPORT_ICONS
-#include "raygui.h"
-//#include "ricons.h"
+// #include "raygui.h"
+// #include "ricons.h"
 #undef RAYGUI_IMPLEMENTATION
 
 //----------------------------------------------------------------------------------

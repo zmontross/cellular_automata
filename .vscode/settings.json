@@ -8,5 +8,9 @@
 		"**/*.o": true,
 		"**/*.exe": true,
 	},
-	"C_Cpp.dimInactiveRegions": false
+	"C_Cpp.dimInactiveRegions": false,
+	"files.associations": {
+		"stdio.h": "c",
+		"screens.h": "c"
+	}
 }
