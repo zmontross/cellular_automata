@@ -617,29 +617,7 @@ void UpdateGameplayScreen(void)
                 // Propagate Updates to MainGrid
                 sgMainGrid.tiles[i][j].alive = sgUpdates.tiles[i][j].alive;
                 sgMainGrid.tiles[i][j].neighbors = GetNeighborsEx(i, j, &sgUpdates);
-                sgMainGrid.active = (sgMainGrid.tiles[i][j].alive == true ? sgMainGrid.active+1 : sgMainGrid.active);
-
-                // Check for the last tile that the mouse hovered-over.
-                if(isMouseOnGrid){
-                    // Only update if the current tile does not match the recorded tile location.
-                    if( (tileLastHovered.x != i) || (tileLastHovered.y != j) ){
-                        Rectangle tile = (Rectangle){
-                                            (sgMainGrid.rect.x + (i * sgMainGrid.tileSizePx)),
-                                            (sgMainGrid.rect.y + (j * sgMainGrid.tileSizePx)),
-                                            sgMainGrid.tileSizePx,
-                                            sgMainGrid.tileSizePx
-                                        };
-                        if(CheckCollisionPointRec(mousePosWorld, tile)){
-                            tileLastHovered = (Vector2){i, j};
-                        }
-                    }
-                }
-                else{
-                    // Default the location to the center of the grid if the mouse has moved-away.
-                    // TODO be smarter about this; the goal was for tools "ghosts" to remain in the grid and visible.
-                    tileLastHovered = (Vector2){sgMainGrid.numTiles.x/2, sgMainGrid.numTiles.y/2};
-                }
-                
+                sgMainGrid.active = (sgMainGrid.tiles[i][j].alive == true ? sgMainGrid.active+1 : sgMainGrid.active);                
             } // for j
         } // for i
     }
@@ -675,6 +653,7 @@ void DrawGameplayScreen(void)
         camFrustumTiles.lr.x = (camFrustumTiles.lr.x > sgMainGrid.numTiles.x)? sgMainGrid.numTiles.x : camFrustumTiles.lr.x;
         camFrustumTiles.lr.y = (camFrustumTiles.lr.y > sgMainGrid.numTiles.y)? sgMainGrid.numTiles.y : camFrustumTiles.lr.y;
 
+        bool foundMouse = false;
         for(int i=camFrustumTiles.ul.x; i<camFrustumTiles.lr.x; i++){
             for(int j=camFrustumTiles.ul.y; j<camFrustumTiles.lr.y; j++){
 
@@ -691,8 +670,18 @@ void DrawGameplayScreen(void)
                 };
                 
                 
-                // Draw highlight on tiles around cursor
+                
                 if(isMouseOnGrid){
+
+                    // Check for the last tile that the mouse hovered-over.
+                    if(!foundMouse){
+                        if(CheckCollisionPointRec(mousePosWorld, gridTileRect)){
+                            foundMouse = true;
+                            tileLastHovered = (Vector2){i, j};
+                        }
+                    }
+
+                    // Draw highlight on tiles around cursor
                     if(CheckCollisionCircleRec(mousePosWorld, sgMainGrid.tileSizePx*CURSOR_GLOW_RADIUS, gridTileRect)){
 
                         int fadeFactor = 0;
@@ -715,7 +704,7 @@ void DrawGameplayScreen(void)
 
                         DrawRectangleLinesEx( gridTileRect, 1, Fade(lineColor, 1.00f - (0.1f * fadeFactor)) );
                     }
-                }
+                } // if mouse on grid
 
                 // Draw active tiles in view
                 if(sgMainGrid.tiles[i][j].alive == true){
