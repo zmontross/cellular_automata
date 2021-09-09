@@ -671,17 +671,15 @@ void DrawGameplayScreen(void)
                     sgMainGrid.rect.y + (j * sgMainGrid.tileSizePx)
                 };
 
-                Rectangle gridTileRect = (Rectangle){
-                    .x = gridTileCoords.x,
-                    .y = gridTileCoords.y,
-                    .width = sgMainGrid.tileSizePx,
-                    .height = sgMainGrid.tileSizePx
-                };
-                
-                
-                
                 if(isMouseOnGrid && !foundMouse){
                     // Check for the last tile that the mouse hovered-over.
+                    Rectangle gridTileRect = (Rectangle){
+                        .x = gridTileCoords.x,
+                        .y = gridTileCoords.y,
+                        .width = sgMainGrid.tileSizePx,
+                        .height = sgMainGrid.tileSizePx
+                    };
+
                     if(CheckCollisionPointRec(mousePosWorld, gridTileRect)){
                         foundMouse = true;
                         tileLastHovered = (Vector2){i, j};
@@ -708,6 +706,7 @@ void DrawGameplayScreen(void)
         // Render mouse halo, tool ghost
         if(isMouseOnGrid){
 
+            // Mouse Halo
             for(int i=camFrustumTiles.ul.x; i<camFrustumTiles.lr.x; i++){
                 for(int j=camFrustumTiles.ul.y; j<camFrustumTiles.lr.y; j++){
 
@@ -723,7 +722,6 @@ void DrawGameplayScreen(void)
                         .height = sgMainGrid.tileSizePx
                     };
 
-                    // Draw highlight on tiles around cursor
                     if(CheckCollisionCircleRec(mousePosWorld, sgMainGrid.tileSizePx*CURSOR_GLOW_RADIUS, gridTileRect)){
 
                         int fadeFactor = 0;
@@ -1006,74 +1004,139 @@ void DrawGameplayScreen(void)
 
         // Draw preview of selected tool
 
-        ToolProps* tpSwitch = NULL;
-        if(toolbox == TB_SINGLE){
-            tpSwitch = &tpSingle;
-        }
-        else if(IsGridEdgeTile((int)tileLastHovered.x, (int)tileLastHovered.y, &sgMainGrid) == false){
+        // ToolProps* tpSwitch = NULL;
+        // if(toolbox == TB_SINGLE){
+        //     tpSwitch = &tpSingle;
+        // }
+        // else if(IsGridEdgeTile((int)tileLastHovered.x, (int)tileLastHovered.y, &sgMainGrid) == false){
             
-            switch(toolbox){
-                case TB_GLIDER:
-                    tpSwitch = &tpGlider;
-                    break;
-                case TB_LWSHIP:
-                    tpSwitch = &tpLwSpaceship;
-                    break;
-                case TB_MWSHIP:
-                    tpSwitch = &tpMwSpaceship;
-                    break;
-                case TB_HWSHIP:
-                    tpSwitch = &tpHwSpaceship;
-                    break;
+        //     switch(toolbox){
+        //         case TB_GLIDER:
+        //             tpSwitch = &tpGlider;
+        //             break;
+        //         case TB_LWSHIP:
+        //             tpSwitch = &tpLwSpaceship;
+        //             break;
+        //         case TB_MWSHIP:
+        //             tpSwitch = &tpMwSpaceship;
+        //             break;
+        //         case TB_HWSHIP:
+        //             tpSwitch = &tpHwSpaceship;
+        //             break;
 
-                case TB_BLOCK:
-                    tpSwitch = &tpBlock;
-                    break;
-                case TB_BEEHIVE:
-                    tpSwitch = &tpBeehive;
-                    break;
-                case TB_LOAF:
-                    tpSwitch = &tpLoaf;
-                    break;
-                case TB_BOAT:
-                    tpSwitch = &tpBoat;
-                    break;
-                case TB_TUB:
-                    tpSwitch = &tpTub;
-                    break;
+        //         case TB_BLOCK:
+        //             tpSwitch = &tpBlock;
+        //             break;
+        //         case TB_BEEHIVE:
+        //             tpSwitch = &tpBeehive;
+        //             break;
+        //         case TB_LOAF:
+        //             tpSwitch = &tpLoaf;
+        //             break;
+        //         case TB_BOAT:
+        //             tpSwitch = &tpBoat;
+        //             break;
+        //         case TB_TUB:
+        //             tpSwitch = &tpTub;
+        //             break;
 
-                case TB_BLINKER:
-                    tpSwitch = &tpBlinker;
-                    break;
-                case TB_TOAD:
-                    tpSwitch = &tpToad;
-                    break;
-                case TB_BEACON:
-                    tpSwitch = &tpBeacon;
-                    break;
-                case TB_PULSAR:
-                    tpSwitch = &tpPulsar;
-                    break;
-                case TB_PENTADECATHLON:
-                    tpSwitch = &tpPentaDecathlon;
-                    break;
+        //         case TB_BLINKER:
+        //             tpSwitch = &tpBlinker;
+        //             break;
+        //         case TB_TOAD:
+        //             tpSwitch = &tpToad;
+        //             break;
+        //         case TB_BEACON:
+        //             tpSwitch = &tpBeacon;
+        //             break;
+        //         case TB_PULSAR:
+        //             tpSwitch = &tpPulsar;
+        //             break;
+        //         case TB_PENTADECATHLON:
+        //             tpSwitch = &tpPentaDecathlon;
+        //             break;
 
-                case TB_GOSPER:
-                    tpSwitch = &tpGosper;
-                    break;
+        //         case TB_GOSPER:
+        //             tpSwitch = &tpGosper;
+        //             break;
                 
-                case TB_RIPCONWAY:
-                    tpSwitch = &tpRipConway;
-                    break;
+        //         case TB_RIPCONWAY:
+        //             tpSwitch = &tpRipConway;
+        //             break;
 
-                default:
-                    // Default to Glider
-                    tpSwitch = &tpGlider;
-                    break;
-            } // switch
+        //         default:
+        //             // Default to Glider
+        //             tpSwitch = &tpGlider;
+        //             break;
+        //     } // switch
             
-        }
+        // }
 
+        ToolProps* tpSwitch = NULL;           
+        switch(toolbox){
+            case TB_SINGLE:
+                tpSwitch = &tpSingle;
+                break;
+
+            case TB_GLIDER:
+                tpSwitch = &tpGlider;
+                break;
+            case TB_LWSHIP:
+                tpSwitch = &tpLwSpaceship;
+                break;
+            case TB_MWSHIP:
+                tpSwitch = &tpMwSpaceship;
+                break;
+            case TB_HWSHIP:
+                tpSwitch = &tpHwSpaceship;
+                break;
+
+            case TB_BLOCK:
+                tpSwitch = &tpBlock;
+                break;
+            case TB_BEEHIVE:
+                tpSwitch = &tpBeehive;
+                break;
+            case TB_LOAF:
+                tpSwitch = &tpLoaf;
+                break;
+            case TB_BOAT:
+                tpSwitch = &tpBoat;
+                break;
+            case TB_TUB:
+                tpSwitch = &tpTub;
+                break;
+
+            case TB_BLINKER:
+                tpSwitch = &tpBlinker;
+                break;
+            case TB_TOAD:
+                tpSwitch = &tpToad;
+                break;
+            case TB_BEACON:
+                tpSwitch = &tpBeacon;
+                break;
+            case TB_PULSAR:
+                tpSwitch = &tpPulsar;
+                break;
+            case TB_PENTADECATHLON:
+                tpSwitch = &tpPentaDecathlon;
+                break;
+
+            case TB_GOSPER:
+                tpSwitch = &tpGosper;
+                break;
+            
+            case TB_RIPCONWAY:
+                tpSwitch = &tpRipConway;
+                break;
+
+            default:
+                // Default to Glider
+                tpSwitch = &tpGlider;
+                break;
+        } // switch
+        
         int tileSizePx = 8; // pixels
 
         Rectangle rectToolPreview = (Rectangle){
