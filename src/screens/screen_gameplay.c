@@ -140,7 +140,7 @@ static Vector2 mousePosWorld_last;
 
 float cameraPanDelta;
 static Camera2D camera; // Target == world-coords.
-
+static bool refreshCamera;
 
 Frustum camFrustum;
     
@@ -257,6 +257,8 @@ void InitGameplayScreen(void)
     }
 
     sgUpdates = sgMainGrid;
+
+    refreshCamera = false;
 
     camera.target = sgMainGrid.posCenterPx;
     camera.offset = (Vector2){ screen.width.half, screen.height.half };
@@ -445,9 +447,13 @@ void UpdateGameplayScreen(void)
     // Camera.
     
     // Accounts for resolution changes.
-    camera.offset = (Vector2){ screen.width.half, screen.height.half };
-    camFrustum.ul = (Vector2){ -64, -64 };
-    camFrustum.lr = (Vector2){ screen.width.full+64, screen.height.full+64 };
+    if(refreshCamera){
+        refreshCamera = false;
+        camera.offset = (Vector2){ screen.width.half, screen.height.half };
+        camFrustum.ul = (Vector2){ -64, -64 };
+        camFrustum.lr = (Vector2){ screen.width.full+64, screen.height.full+64 };
+    }
+    
 
 
     if(IsKeyPressed(KEY_T)) {
@@ -638,7 +644,10 @@ void DrawGameplayScreen(void)
         // Get the world-coordinate translation of the camera frustum.
 
 
-        Frustum camFrustumWorld = (Frustum){ GetScreenToWorld2D(camFrustum.ul,camera), GetScreenToWorld2D(camFrustum.lr,camera) };
+        Frustum camFrustumWorld = (Frustum){
+                                    GetScreenToWorld2D(camFrustum.ul,camera),
+                                    GetScreenToWorld2D(camFrustum.lr,camera)
+                                };
 
         Frustum camFrustumTiles;
 
@@ -1100,17 +1109,14 @@ void DrawMenuOverlay(){
     DrawRectangleRec(rectMenuOverlay, Fade(BLACK, 0.4f));
     DrawText("Menu", rectMenuOverlay.x + (rectMenuOverlay.width / 2) - (MeasureText("Menu", 20) / 2), rectMenuOverlay.y + 20, 20, GRAY);
     
-    // showExitConfirmation == true? 0 : GuiSetTooltip("Close this window.");
     if (GuiButton((Rectangle){ rectMenuOverlay.x + 20, rectMenuOverlay.y + 40, gd.bWidths.full, gd.bHeights.full }, "Return")) showMenuOverlay = false;
-    // GuiClearTooltip();
 
-    // showExitConfirmation == true? 0 : GuiSetTooltip("Update resolution.");
-    if (GuiButton((Rectangle){ rectMenuOverlay.x + 20, rectMenuOverlay.y + 40 + 5 + gd.bHeights.full*1, gd.bWidths.full, gd.bHeights.full }, "Options")) finishScreen = 2;
-    // GuiClearTooltip();
+    if (GuiButton((Rectangle){ rectMenuOverlay.x + 20, rectMenuOverlay.y + 40 + 5 + gd.bHeights.full*1, gd.bWidths.full, gd.bHeights.full }, "Options")){
+        refreshCamera = true;
+        finishScreen = 2;
+    }
 
-    // showExitConfirmation == true? 0 : GuiSetTooltip("Exit, and return to title screen.");
     if (GuiButton((Rectangle){ rectMenuOverlay.x + 20, rectMenuOverlay.y + 40 + (5*2) + gd.bHeights.full*2, gd.bWidths.full, gd.bHeights.full }, "Exit to Menu")) showExitConfirmation = true;
-    // GuiClearTooltip();
     showExitConfirmation == true? GuiEnable() : GuiDisable();
 
     if(showExitConfirmation){

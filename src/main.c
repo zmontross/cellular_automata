@@ -32,8 +32,8 @@ int main(void)
     currentScreen = LOGO;   // NOTE: currentScreen is defined in screens.h as a global variable
     prevScreen = LOGO;
 
-    stylefile = "./.cellular_automata.rgs";
-    settings_file = "./.cellular_automata.settings";
+    style_file = "./cellular_automata.rgs";
+    settings_file = "./cellular_automata.settings";
 
     
     if(!FileExists(settings_file)){
