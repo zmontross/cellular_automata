@@ -711,6 +711,18 @@ void DrawGameplayScreen(void)
             for(int i=camFrustumTiles.ul.x; i<camFrustumTiles.lr.x; i++){
                 for(int j=camFrustumTiles.ul.y; j<camFrustumTiles.lr.y; j++){
 
+                    Vector2 gridTileCoords = (Vector2){
+                        sgMainGrid.rect.x + (i * sgMainGrid.tileSizePx),
+                        sgMainGrid.rect.y + (j * sgMainGrid.tileSizePx)
+                    };
+
+                    Rectangle gridTileRect = (Rectangle){
+                        .x = gridTileCoords.x,
+                        .y = gridTileCoords.y,
+                        .width = sgMainGrid.tileSizePx,
+                        .height = sgMainGrid.tileSizePx
+                    };
+
                     // Draw highlight on tiles around cursor
                     if(CheckCollisionCircleRec(mousePosWorld, sgMainGrid.tileSizePx*CURSOR_GLOW_RADIUS, gridTileRect)){
 
