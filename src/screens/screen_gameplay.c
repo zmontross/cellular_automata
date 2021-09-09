@@ -258,7 +258,7 @@ void InitGameplayScreen(void)
 
     sgUpdates = sgMainGrid;
 
-    refreshCamera = false;
+    refreshCamera = true;
 
     camera.target = sgMainGrid.posCenterPx;
     camera.offset = (Vector2){ screen.width.half, screen.height.half };
@@ -276,60 +276,6 @@ void InitGameplayScreen(void)
 // Gameplay Screen Update logic
 void UpdateGameplayScreen(void)
 {   
-
-
-    rectProg = (Rectangle){
-        .x = gd.margin*2,
-        .y = screen.height.full - gd.margin*4,
-        .width = screen.width.full - gd.margin*4,
-        .height = gd.margin*1.5
-    };
-
-    btnClearGridRect = (Rectangle){
-        .x = gd.margin*4,
-        .y = rectProg.y - gd.bHeights.triq - gd.margin*2,
-        .width = gd.bWidths.full,
-        .height = gd.bHeights.triq,
-    };
-
-    btnPauseRect = (Rectangle){
-        .x = screen.width.half - gd.bWidths.half - gd.margin,
-        .y = rectProg.y - gd.bHeights.triq - gd.margin*2,
-        .width = gd.bWidths.full,
-        .height = gd.bHeights.triq,
-    };
-
-    btnMenuRect = (Rectangle){
-        .x = screen.width.full - gd.bWidths.quart - gd.margin*2,
-        .y = gd.margin*2,
-        .width = gd.bWidths.quart,
-        .height = gd.bWidths.quart
-    };
-
-    btnHelpRect = (Rectangle){
-        .x = screen.width.full - gd.bWidths.quart*2 - gd.margin*4,
-        .y = gd.margin*2,
-        .width = gd.bWidths.quart,
-        .height = gd.bWidths.quart
-    };
-
-    btnOpenToolboxRect = (Rectangle){
-        .x = screen.width.full - gd.bWidths.full - gd.margin*4,
-        .y = rectProg.y - gd.bHeights.triq - gd.margin*2,
-        .width = gd.bWidths.full,
-        .height = gd.bHeights.triq,
-    };
-
-    rectSimSpeed = (Rectangle){
-        .x = screen.width.half + gd.bHeights.quart,
-        .y = rectProg.y - gd.bHeights.triq - gd.margin*2,
-        .width = gd.bWidths.half,
-        .height = gd.bHeights.triq,
-    };
-    
-
-    // THE WAGES OF SIN ARE BLOOD... AND BAD CODE...
-
 
 
     framesCounter = framesCounter>=60? 0 : framesCounter+1;
@@ -365,6 +311,66 @@ void UpdateGameplayScreen(void)
     isMouseOnGrid = (isMouseOnGui? false : CheckCollisionPointRec(GetScreenToWorld2D(mousePosScreen, camera), sgMainGrid.rect));
 
 
+    // Accounts for resolution changes.
+    if(refreshCamera){
+        refreshCamera = false;
+        camera.offset = (Vector2){ screen.width.half, screen.height.half };
+        camFrustum.ul = (Vector2){ -64, -64 };
+        camFrustum.lr = (Vector2){ screen.width.full+64, screen.height.full+64 };
+
+        rectProg = (Rectangle){
+            .x = gd.margin*2,
+            .y = screen.height.full - gd.margin*4,
+            .width = screen.width.full - gd.margin*4,
+            .height = gd.margin*1.5
+        };
+
+        btnClearGridRect = (Rectangle){
+            .x = gd.margin*4,
+            .y = rectProg.y - gd.bHeights.triq - gd.margin*2,
+            .width = gd.bWidths.full,
+            .height = gd.bHeights.triq,
+        };
+
+        btnPauseRect = (Rectangle){
+            .x = screen.width.half - gd.bWidths.half - gd.margin,
+            .y = rectProg.y - gd.bHeights.triq - gd.margin*2,
+            .width = gd.bWidths.full,
+            .height = gd.bHeights.triq,
+        };
+
+        btnMenuRect = (Rectangle){
+            .x = screen.width.full - gd.bWidths.quart - gd.margin*2,
+            .y = gd.margin*2,
+            .width = gd.bWidths.quart,
+            .height = gd.bWidths.quart
+        };
+
+        btnHelpRect = (Rectangle){
+            .x = screen.width.full - gd.bWidths.quart*2 - gd.margin*4,
+            .y = gd.margin*2,
+            .width = gd.bWidths.quart,
+            .height = gd.bWidths.quart
+        };
+
+        btnOpenToolboxRect = (Rectangle){
+            .x = screen.width.full - gd.bWidths.full - gd.margin*4,
+            .y = rectProg.y - gd.bHeights.triq - gd.margin*2,
+            .width = gd.bWidths.full,
+            .height = gd.bHeights.triq,
+        };
+
+        
+    }
+
+    // TODO Speed buttons not showing when this is placed in above conditional; why??
+    rectSimSpeed = (Rectangle){
+        .x = screen.width.half + gd.bHeights.quart,
+        .y = rectProg.y - gd.bHeights.triq - gd.margin*2,
+        .width = gd.bWidths.half,
+        .height = gd.bHeights.triq,
+    };
+
     // Pause / Set Sim Speed
     if(IsKeyPressed(KEY_SPACE)){
         sc.paused = !sc.paused;
@@ -389,12 +395,7 @@ void UpdateGameplayScreen(void)
     else if(IsKeyPressed(KEY_F)){
         if(IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)){
             switch(sc.simsPerCycle){
-                case SPC_STEP:
-                    sc.simsPerCycle = SPC_FAST;
-                    break;
-                case SPC_SLOW:
-                    sc.simsPerCycle = SPC_STEP;
-                    break;
+
                 case SPC_MED:
                     sc.simsPerCycle = SPC_SLOW;
                     break;
@@ -446,16 +447,6 @@ void UpdateGameplayScreen(void)
 
     // Camera.
     
-    // Accounts for resolution changes.
-    if(refreshCamera){
-        refreshCamera = false;
-        camera.offset = (Vector2){ screen.width.half, screen.height.half };
-        camFrustum.ul = (Vector2){ -64, -64 };
-        camFrustum.lr = (Vector2){ screen.width.full+64, screen.height.full+64 };
-    }
-    
-
-
     if(IsKeyPressed(KEY_T)) {
         camera.zoom = ZOOM_DFLT;
         camera.target = sgMainGrid.posCenterPx;
@@ -893,9 +884,6 @@ void DrawGameplayScreen(void)
     // Help Overlay Button
     if (GuiButton(btnHelpRect, GuiIconText(RICON_HELP, NULL)) ) showHelpOverlay = !showHelpOverlay;
 
-    // Show help (controls, etc)
-    if(showHelpOverlay) DrawHelpOverlay();
-
     // Simulation Speed Buttons
     rectSimSpeed.x += rectSimSpeed.width + gd.margin;
     GuiSetState( (sc.simsPerCycle == SPC_STEP ? GUI_STATE_PRESSED : GUI_STATE_NORMAL) );
@@ -933,9 +921,11 @@ void DrawGameplayScreen(void)
     // Show FPS
     if(guiShowFps) DrawFPS(20, 20);
 
-
     // Show count of alive tiles.
     if(guiShowAlive) DrawText(TextFormat("%d Alive", sgMainGrid.active), 20, 40, 20, GREEN);
+
+    // Show help (controls, etc)
+    if(showHelpOverlay) DrawHelpOverlay();
 
 
     // Toolbox Button
@@ -1020,76 +1010,6 @@ void DrawGameplayScreen(void)
         EndScissorMode();
 
 
-        // Draw preview of selected tool
-
-        // ToolProps* tpSwitch = NULL;
-        // if(toolbox == TB_SINGLE){
-        //     tpSwitch = &tpSingle;
-        // }
-        // else if(IsGridEdgeTile((int)tileLastHovered.x, (int)tileLastHovered.y, &sgMainGrid) == false){
-            
-        //     switch(toolbox){
-        //         case TB_GLIDER:
-        //             tpSwitch = &tpGlider;
-        //             break;
-        //         case TB_LWSHIP:
-        //             tpSwitch = &tpLwSpaceship;
-        //             break;
-        //         case TB_MWSHIP:
-        //             tpSwitch = &tpMwSpaceship;
-        //             break;
-        //         case TB_HWSHIP:
-        //             tpSwitch = &tpHwSpaceship;
-        //             break;
-
-        //         case TB_BLOCK:
-        //             tpSwitch = &tpBlock;
-        //             break;
-        //         case TB_BEEHIVE:
-        //             tpSwitch = &tpBeehive;
-        //             break;
-        //         case TB_LOAF:
-        //             tpSwitch = &tpLoaf;
-        //             break;
-        //         case TB_BOAT:
-        //             tpSwitch = &tpBoat;
-        //             break;
-        //         case TB_TUB:
-        //             tpSwitch = &tpTub;
-        //             break;
-
-        //         case TB_BLINKER:
-        //             tpSwitch = &tpBlinker;
-        //             break;
-        //         case TB_TOAD:
-        //             tpSwitch = &tpToad;
-        //             break;
-        //         case TB_BEACON:
-        //             tpSwitch = &tpBeacon;
-        //             break;
-        //         case TB_PULSAR:
-        //             tpSwitch = &tpPulsar;
-        //             break;
-        //         case TB_PENTADECATHLON:
-        //             tpSwitch = &tpPentaDecathlon;
-        //             break;
-
-        //         case TB_GOSPER:
-        //             tpSwitch = &tpGosper;
-        //             break;
-                
-        //         case TB_RIPCONWAY:
-        //             tpSwitch = &tpRipConway;
-        //             break;
-
-        //         default:
-        //             // Default to Glider
-        //             tpSwitch = &tpGlider;
-        //             break;
-        //     } // switch
-            
-        // }
-
         ToolProps* tpSwitch = NULL;           
         switch(toolbox){
             case TB_SINGLE:
@@ -1170,6 +1090,7 @@ void DrawGameplayScreen(void)
 
         int toolPreviewPosX = rectToolPreview.x + (rectToolPreview.width/2) - (tpSwitch->width * tileSizePx / 2);
         DrawToolPreview( toolPreviewPosX, rectToolPreview.y + tileSizePx, tileSizePx, tpSwitch, 0, SKYBLUE );
+
     }
     else{
         // Hide toolbox pane if user moves mouse off of it.
