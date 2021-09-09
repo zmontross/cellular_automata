@@ -98,6 +98,7 @@
 // #include "ricons.h"
 #include "raymath.h"
 
+#include "tool_defs.h"
 
 #define RICON_GEAR_BIG 142
 #define RICON_HELP 193
@@ -151,6 +152,10 @@ static bool guiShowNeighborNums;
 static bool guiShowFps;
 static bool guiShowAlive;
 
+int guiCategorySelected;
+int guiToolboxSelection;
+int listViewExScrollIndex;
+int guiSimsPerCycleSelected;
 
 static int toolbox;
 
@@ -182,19 +187,6 @@ Rectangle view;
 // Gameplay Screen Functions Definition
 //----------------------------------------------------------------------------------
 
-
-//                                                                                                                                                      
-// 88  888b      88  88  888888888888  88         db         88           88  888888888888         db    888888888888  88    ,ad8888ba,    888b      88  
-// 88  8888b     88  88       88       88        d88b        88           88           ,88        d88b        88       88   d8"'    `"8b   8888b     88  
-// 88  88 `8b    88  88       88       88       d8'`8b       88           88         ,88"        d8'`8b       88       88  d8'        `8b  88 `8b    88  
-// 88  88  `8b   88  88       88       88      d8'  `8b      88           88       ,88"         d8'  `8b      88       88  88          88  88  `8b   88  
-// 88  88   `8b  88  88       88       88     d8YaaaaY8b     88           88     ,88"          d8YaaaaY8b     88       88  88          88  88   `8b  88  
-// 88  88    `8b 88  88       88       88    d8""""""""8b    88           88   ,88"           d8""""""""8b    88       88  Y8,        ,8P  88    `8b 88  
-// 88  88     `8888  88       88       88   d8'        `8b   88           88  88"            d8'        `8b   88       88   Y8a.    .a8P   88     `8888  
-// 88  88      `888  88       88       88  d8'          `8b  88888888888  88  888888888888  d8'          `8b  88       88    `"Y8888Y"'    88      `888  
-//
-// http://patorjk.com/software/taag/#p=display&f=Univers&t=INITIALIZATION
-//
 // Gameplay Screen Initialization logic
 void InitGameplayScreen(void)
 {
@@ -244,32 +236,27 @@ void InitGameplayScreen(void)
     sgMainGrid = (Grid){ 0 };
     sgMainGrid.tileSizePx = DFLT_TILE_SIZE_PX;
     sgMainGrid.numTiles = (Vector2){ DFLT_GRID_SIZE_X, DFLT_GRID_SIZE_Y };
-    sgMainGrid.rect = (Rectangle){ 0, 0, (sgMainGrid.numTiles.x*sgMainGrid.tileSizePx), (sgMainGrid.numTiles.y*sgMainGrid.tileSizePx) };
-    
-    sgMainGrid.corners.ul = (Vector2){ sgMainGrid.rect.x, sgMainGrid.rect.y};
-    sgMainGrid.corners.ur = (Vector2){ sgMainGrid.rect.x + sgMainGrid.rect.width, sgMainGrid.rect.y};
-    sgMainGrid.corners.ll = (Vector2){ sgMainGrid.rect.x, sgMainGrid.rect.y + sgMainGrid.rect.height};
-    sgMainGrid.corners.lr = (Vector2){ sgMainGrid.rect.x + sgMainGrid.rect.width, sgMainGrid.rect.y + sgMainGrid.rect.height};
-
-    sgMainGrid.posCenterPx = (Vector2){ sgMainGrid.corners.ul.x + (sgMainGrid.tileSizePx * sgMainGrid.numTiles.x/2), sgMainGrid.corners.ul.y + (sgMainGrid.tileSizePx * sgMainGrid.numTiles.y/2) };
-    sgMainGrid.posCenterPx = (Vector2){ sgMainGrid.corners.ul.x + (sgMainGrid.tileSizePx * sgMainGrid.numTiles.x/2), sgMainGrid.corners.ul.y + (sgMainGrid.tileSizePx * sgMainGrid.numTiles.y/2) };
+    sgMainGrid.rect = (Rectangle){
+        0,
+        0,
+        (sgMainGrid.numTiles.x*sgMainGrid.tileSizePx),
+        (sgMainGrid.numTiles.y*sgMainGrid.tileSizePx)
+    };
+    sgMainGrid.posCenterPx = (Vector2){
+        sgMainGrid.rect.x + (sgMainGrid.tileSizePx * sgMainGrid.numTiles.x/2),
+        sgMainGrid.rect.y + (sgMainGrid.tileSizePx * sgMainGrid.numTiles.y/2)
+    };
     sgMainGrid.active = 0;
     sgMainGrid.color = DARKGRAY;
-
-    sgUpdates = sgMainGrid;
 
     for(int i=0; i<sgMainGrid.numTiles.x; i++){
         for(int j=0; j<sgMainGrid.numTiles.y; j++){
             sgMainGrid.tiles[i][j].alive = false;
-
-            int colorMod = GetRandomValue(0, 16);
-            sgMainGrid.tiles[i][j].color = (Color){ sgMainGrid.color.r+colorMod, sgMainGrid.color.g+colorMod, sgMainGrid.color.b+colorMod, sgMainGrid.color.a };            
             sgMainGrid.tiles[i][j].neighbors = 0;
-
-            sgUpdates.tiles[i][j].alive = false;
-            sgUpdates.tiles[i][j].neighbors = 0;
         }
     }
+
+    sgUpdates = sgMainGrid;
 
     camera.target = sgMainGrid.posCenterPx;
     camera.offset = (Vector2){ screen.width.half, screen.height.half };
@@ -284,18 +271,6 @@ void InitGameplayScreen(void)
 } // end InitGameplayScreen()
 
 
-//
-// 88        88  88888888ba   88888888ba,         db    888888888888  88888888888  
-// 88        88  88      "8b  88      `"8b       d88b        88       88           
-// 88        88  88      ,8P  88        `8b     d8'`8b       88       88           
-// 88        88  88aaaaaa8P'  88         88    d8'  `8b      88       88aaaaa      
-// 88        88  88""""""'    88         88   d8YaaaaY8b     88       88"""""      
-// 88        88  88           88         8P  d8""""""""8b    88       88           
-// Y8a.    .a8P  88           88      .a8P  d8'        `8b   88       88           
-//  `"Y8888Y"'   88           88888888Y"'  d8'          `8b  88       88888888888  
-//
-// http://patorjk.com/software/taag/#p=display&f=Univers&t=UPDATE
-//
 // Gameplay Screen Update logic
 void UpdateGameplayScreen(void)
 {   
@@ -626,63 +601,52 @@ void UpdateGameplayScreen(void)
             }
         }
     }
-        
+
     // Sync Grids
     sgMainGrid.active = 0;
-    for(int i=0; i<sgMainGrid.numTiles.x; i++){
-        for(int j=0; j<sgMainGrid.numTiles.y; j++){
+    if(userWantsClearGrid){
+        userWantsClearGrid = false;
+        memset( sgMainGrid.tiles, 0, sizeof(Tile) * sgMainGrid.numTiles.x * sgMainGrid.numTiles.y);
+        memset( sgUpdates.tiles, 0, sizeof(Tile) * sgUpdates.numTiles.x * sgUpdates.numTiles.y);
+    }
+    else{
+        for(int i=0; i<sgMainGrid.numTiles.x; i++){
+            for(int j=0; j<sgMainGrid.numTiles.y; j++){
 
-            if(userWantsClearGrid){
-                // Clear tiles
-                sgMainGrid.tiles[i][j].alive = false;
-                sgUpdates.tiles[i][j].alive = false;
-
-                sgMainGrid.tiles[i][j].neighbors = 0;
-                sgUpdates.tiles[i][j].neighbors = 0;
-            }
-            else{
                 // Propagate Updates to MainGrid
-                sgMainGrid.tiles[i][j].alive = sgUpdates.tiles[i][j].alive;
-                sgMainGrid.tiles[i][j].neighbors = GetNeighborsEx(i, j, &sgUpdates);
+                // sgMainGrid.tiles[i][j].alive = sgUpdates.tiles[i][j].alive;
+                // sgMainGrid.tiles[i][j].neighbors = GetNeighborsEx(i, j, &sgUpdates);
+                sgMainGrid.tiles[i][j] = {
+                    sgUpdates.tiles[i][j].alive,
+                    GetNeighborsEx(i, j, &sgUpdates)
+                };
                 sgMainGrid.active = (sgMainGrid.tiles[i][j].alive == true ? sgMainGrid.active+1 : sgMainGrid.active);
-            }
 
-            // Check for the last tile that the mouse hovered-over.
-            if(isMouseOnGrid){
-                // Only update if the current tile does not match the recorded tile location.
-                if( (tileLastHovered.x != i) || (tileLastHovered.y != j) ){
-                    Rectangle tile = (Rectangle){ (sgMainGrid.rect.x + (i * sgMainGrid.tileSizePx )), (sgMainGrid.rect.y + (j * sgMainGrid.tileSizePx)), sgMainGrid.tileSizePx, sgMainGrid.tileSizePx };
-                    if(CheckCollisionPointRec(mousePosWorld, tile)){
-                        tileLastHovered = (Vector2){i, j};
+                // Check for the last tile that the mouse hovered-over.
+                if(isMouseOnGrid){
+                    // Only update if the current tile does not match the recorded tile location.
+                    if( (tileLastHovered.x != i) || (tileLastHovered.y != j) ){
+                        Rectangle tile = (Rectangle){ (sgMainGrid.rect.x + (i * sgMainGrid.tileSizePx )), (sgMainGrid.rect.y + (j * sgMainGrid.tileSizePx)), sgMainGrid.tileSizePx, sgMainGrid.tileSizePx };
+                        if(CheckCollisionPointRec(mousePosWorld, tile)){
+                            tileLastHovered = (Vector2){i, j};
+                        }
                     }
                 }
-            }
-            else{
-                // Default the location to the center of the grid if the mouse has moved-away.
-                // TODO be smarter about this; the goal was for tools "ghosts" to remain in the grid and visible.
-                tileLastHovered = (Vector2){sgMainGrid.numTiles.x/2, sgMainGrid.numTiles.y/2};
-            }
-            
-        } // for j
-    } // for i
-    userWantsClearGrid = false;
+                else{
+                    // Default the location to the center of the grid if the mouse has moved-away.
+                    // TODO be smarter about this; the goal was for tools "ghosts" to remain in the grid and visible.
+                    tileLastHovered = (Vector2){sgMainGrid.numTiles.x/2, sgMainGrid.numTiles.y/2};
+                }
+                
+            } // for j
+        } // for i
+    }
+    
 
     
 } // end UpdateGameplayScreen()
 
 
-//                                                                  
-// 88888888ba,    88888888ba          db    I8,        8        ,8I  
-// 88      `"8b   88      "8b        d88b   `8b       d8b       d8'  
-// 88        `8b  88      ,8P       d8'`8b   "8,     ,8"8,     ,8"   
-// 88         88  88aaaaaa8P'      d8'  `8b   Y8     8P Y8     8P    
-// 88         88  88""""88'       d8YaaaaY8b  `8b   d8' `8b   d8'    
-// 88         8P  88    `8b      d8""""""""8b  `8a a8'   `8a a8'     
-// 88      .a8P   88     `8b    d8'        `8b  `8a8'     `8a8'      
-// 88888888Y"'    88      `8b  d8'          `8b  `8'       `8'       
-//
-// http://patorjk.com/software/taag/#p=display&f=Univers&t=DRAW
-//
 // Gameplay Screen Draw logic
 void DrawGameplayScreen(void)
 {
@@ -712,7 +676,10 @@ void DrawGameplayScreen(void)
         for(int i=camFrustumTiles.ul.x; i<camFrustumTiles.lr.x; i++){
             for(int j=camFrustumTiles.ul.y; j<camFrustumTiles.lr.y; j++){
 
-                Vector2 gridTileCoords = (Vector2){ sgMainGrid.corners.ul.x + (i * sgMainGrid.tileSizePx), sgMainGrid.corners.ul.y + (j * sgMainGrid.tileSizePx) };
+                Vector2 gridTileCoords = (Vector2){
+                    sgMainGrid.rect.x + (i * sgMainGrid.tileSizePx),
+                    sgMainGrid.rect.y + (j * sgMainGrid.tileSizePx)
+                };
 
                 Rectangle gridTileRect = (Rectangle){
                     .x = gridTileCoords.x,
@@ -1117,19 +1084,7 @@ void DrawGameplayScreen(void)
     if(showMenuOverlay) DrawMenuOverlay();
 
 } // end DrawGameplayScreen
-
-
-//                                                                                    
-// 88        88  888b      88  88           ,ad8888ba,         db         88888888ba,    
-// 88        88  8888b     88  88          d8"'    `"8b       d88b        88      `"8b   
-// 88        88  88 `8b    88  88         d8'        `8b     d8'`8b       88        `8b  
-// 88        88  88  `8b   88  88         88          88    d8'  `8b      88         88  
-// 88        88  88   `8b  88  88         88          88   d8YaaaaY8b     88         88  
-// 88        88  88    `8b 88  88         Y8,        ,8P  d8""""""""8b    88         8P  
-// Y8a.    .a8P  88     `8888  88          Y8a.    .a8P  d8'        `8b   88      .a8P   
-//  `"Y8888Y"'   88      `888  88888888888  `"Y8888Y"'  d8'          `8b  88888888Y"'    
-//
-// http://patorjk.com/software/taag/#p=display&f=Univers&t=UNLOAD                                                   
+                                                  
 
 // Gameplay Screen Unload logic
 void UnloadGameplayScreen(void){
@@ -1138,38 +1093,12 @@ void UnloadGameplayScreen(void){
 }
 
 
-//
-// 88888888888  88  888b      88  88   ad88888ba   88        88  
-// 88           88  8888b     88  88  d8"     "8b  88        88  
-// 88           88  88 `8b    88  88  Y8,          88        88  
-// 88aaaaa      88  88  `8b   88  88  `Y8aaaaa,    88aaaaaaaa88  
-// 88"""""      88  88   `8b  88  88    `"""""8b,  88""""""""88  
-// 88           88  88    `8b 88  88          `8b  88        88  
-// 88           88  88     `8888  88  Y8a     a8P  88        88  
-// 88           88  88      `888  88   "Y88888P"   88        88  
-//
-// http://patorjk.com/software/taag/#p=display&f=Univers&t=FINISH
-//
-
 // Gameplay Screen should finish?
 int FinishGameplayScreen(void)
 {
     return finishScreen;
 }
 
-
-//                                                                                            
-// 88        88  888888888888  88  88           88  888888888888  88  88888888888  ad88888ba   
-// 88        88       88       88  88           88       88       88  88          d8"     "8b  
-// 88        88       88       88  88           88       88       88  88          Y8,          
-// 88        88       88       88  88           88       88       88  88aaaaa     `Y8aaaaa,    
-// 88        88       88       88  88           88       88       88  88"""""       `"""""8b,  
-// 88        88       88       88  88           88       88       88  88                  `8b  
-// Y8a.    .a8P       88       88  88           88       88       88  88          Y8a     a8P  
-//  `"Y8888Y"'        88       88  88888888888  88       88       88  88888888888  "Y88888P"   
-//
-// http://patorjk.com/software/taag/#p=display&f=Univers&t=UTILITIES
-//
 
 void DrawMenuOverlay(){
     sc.paused = true;
