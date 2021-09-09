@@ -1,0 +1,62 @@
+//////////////////////////////////////////
+FEATURES
+
+
+General: Info-screen / Tutorial
+General: "raylib" information space / Credits
+
+??  -   Interaction: Delayed tooltips, CheckBox to display help/controls. UI completion with '?' buttons for revealing explanations/controls.
+x   -   General: Relocate the overlay-menu draw code to its own function (for cleanliness).
+x   -   Visuals: Text at mouse, "'R' to rotate", "Place 'Glider'", Use Show/Hide Checkbox for text.
+x   -   Interaction: Reset tool orientation when a new tool is selected.
+x   -   Interaction: Automatically close the toolbox list when a tool is selected.
+x   -   Interaction: Press 'R' or "Shift + R" to rotate the shape.
+x   -   Visuals: Minimalist GUI Overhaul
+x   -   Interaction: Show...: FPS, Neighbor #s
+x   -   Interaction: menu - show... - pause - clear grid - Toolbox...
+x   -   Visuals: View-toggled scroll list for toolbox
+x   -   Visuals: New Tool Ghosts
+x   -   General: Save resolution/fullscreen settings to file
+??  -   General: Determine if grid tiles have become stable. Save last several live-tile-counts, use cycle-counting (tortoise/hair???) or something to determine if it repeats.
+??  -   Visuals: Spotlight around cursor (definition; brighter upper-right, darker lower-left corners? something like that)
+??  -   Visuals: Spotlight around active tiles.
+??  -   Visuals: Light around border of grid.
+x   -   Options: Accessable from gameplay screen.
+x   -   Load resolution/fullscreen settings from file
+x   -   Completed options menu. Static list position, full-screen, judge startup size from monitor res.
+??  -   Interaction: Click-hold to use tool repeated, but ONLY if cursor has moved beyond previous stamp's area. Rst on tool-change.
+??  -   Interaction: Toolbox slide-in / slide-out with either TAB-pressed OR by clicking on a slight hint-bar left near the slide-away area.
+x   -   "Powered by Raylib" startup
+x   -   Options: Fullscreen
+x   -   "Intro" screen
+x   -   Interaction: Slow simulation speed (via framesCounter), pause/play
+x   -   Visuals: Spotlight around cursor
+x   -   Tools: Need to accomodate tools larger than 3x3
+x   -   Tools: Add "Example Patterns" http://pi.math.cornell.edu/~lipa/mec/lesson6.html
+x   -   General: Enumeration for tools/brushes.
+x   -   General: Grid/Tile Render Culling
+x   -   Interaction: Drag/pan with mouse.
+x   -   General: Reduce number of iterative loops for going through grid!
+x   -   Debug Overlay: FPS improvement when Debug overlay is visible. (Only render tile-state-text when zoomed-in??)(Mouseover+radius??)
+x   -   Debug Overlay: Show FPS. (Maybe option to always show/hide independently??)
+x   -   General: Living tiles count (average maybe?) in the corner.
+x   -   General: Dark tint behind on-screen text.
+x   -   Interaction: Auto-pause after "Clear Grid" button clicked.
+x   -   Interaction: Cap zoom level at max bounds of grid.
+x   -   Interaction: Zoom on mouse.
+x   -   Interaction: Split-apart "tap" int Left/Right/Middle/other mouse clicks. Currently all are "GESTURE_x"
+x   -   Interaction: Click-once should do as the tool indicates just once. (i.e. split from "hold" action)
+x   -   General: Relocate checks for Screen<--->World point-rectangle collisions from Draw() to Update() (if feasible).
+
+////////////////////////////
+BUGS
+
+When in 'STEP' simspeed, when Space is pressed the sim immediately steps once forward, but clicking "PAUSE" forces a duration-wait.
+
+Following minimalism overhaul, re-selecting the current toolbox tool does not deselect it.
+
+x   -   Camera target doesn't update with resolution change / GUI resize
+x   -   Camera frustrum doesn't update with GUI resize
+x   -   GUI sizing still doesn't update after gameplay->options->updateResolution->gameplay sequence. Font okay though.
+x   -   World coords of lower-right corner of cam frustum not being recalculated properly; constantly set to grid's absolute last corner.
+x   -   GUI sizing doesn't update (despite calling the function) after returning from Options screen.
