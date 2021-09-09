@@ -628,8 +628,6 @@ void UpdateGameplayScreen(void)
         } // for i
     }
     
-
-    
 } // end UpdateGameplayScreen()
 
 
@@ -688,7 +686,27 @@ void DrawGameplayScreen(void)
 
                 // Draw active tiles in view
                 if(sgMainGrid.tiles[i][j].alive == true){
-                    DrawRectangle(gridTileCoords.x, gridTileCoords.y, sgMainGrid.tileSizePx, sgMainGrid.tileSizePx, WHITE);
+                    // DrawRectangle(gridTileCoords.x, gridTileCoords.y, sgMainGrid.tileSizePx, sgMainGrid.tileSizePx, WHITE);
+
+                    Corners c = (Corners){
+                        (Vector2){ gridTileCoords.x, gridTileCoords.y },
+                        (Vector2){ gridTileCoords.x + sgMainGrid.tileSizePx, gridTileCoords.y },
+                        (Vector2){ gridTileCoords.x, gridTileCoords.y + sgMainGrid.tileSizePx },
+                        (Vector2){ gridTileCoords.x + sgMainGrid.tileSizePx, gridTileCoords.y + sgMainGrid.tileSizePx }
+                    };
+
+                    DrawTriangle(c.ll, c.ur, c.ul, WHITE);
+                    DrawTriangle(c.ll, c.lr, c.ur, GRAY);                    
+                    DrawRectangle(gridTileCoords.x + 2, gridTileCoords.y + 2, sgMainGrid.tileSizePx - 4, sgMainGrid.tileSizePx - 4, LIGHTGRAY);
+
+                    // DrawTriangle(c.ll, c.ur, c.ul, YELLOW);
+                    // DrawTriangle(c.ll, c.lr, c.ur, ORANGE);                    
+                    // DrawRectangle(gridTileCoords.x + 4, gridTileCoords.y + 4, sgMainGrid.tileSizePx - 8, sgMainGrid.tileSizePx - 8, GOLD);
+
+                    // DrawTriangle(c.ll, c.ur, c.ul, DARKGRAY);
+                    // DrawTriangle(c.ll, c.lr, c.ur, WHITE);
+                    // DrawRectangle(c.ul.x + 4, c.ul.y + 4, sgMainGrid.tileSizePx - 8, sgMainGrid.tileSizePx - 8, GRAY);
+
                 }
 
                 // if debug, show centered true/false text
