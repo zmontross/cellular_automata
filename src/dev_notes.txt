@@ -60,3 +60,30 @@ x   -   Camera frustrum doesn't update with GUI resize
 x   -   GUI sizing still doesn't update after gameplay->options->updateResolution->gameplay sequence. Font okay though.
 x   -   World coords of lower-right corner of cam frustum not being recalculated properly; constantly set to grid's absolute last corner.
 x   -   GUI sizing doesn't update (despite calling the function) after returning from Options screen.
+
+
+
+
+
+
+
+
+Grid chunks, 9x9 to start???
+
+Grid tiles should retain grid-centric coordinates; want to avoid having 3D array of 'X,Y,Chunk'
+
+Option 1: Add an `int` to each `Tile` called "Chunk". Set this at initialization time.
+    Two counters. CA and CB.
+    For first 9 tiles set Chunk to CA=0+CB, second 9 to CA=1+CB, third 9 to CA=2+CB, etc. until end. Reset counter to CA=0+CB.
+    Repeat for first nine rows.
+    For second 9 rows set CB=1.
+    For first 9 tiles set Chunk to CA=0+CB, second 9 to CA=1+CB, third 9 to CA=2+CB, etc. until end. Reset counter to CA=0+CB.
+    Repeat for second nine rows.
+    Repeat until done.
+
+    When checking for cells needing updates...
+    
+    for-loops limited to chunk size
+    Evaluate each cell, set updates accordingly regardless of chunk affiliation
+
+    Need to set counters, or something, for the num-active-per-chunk
