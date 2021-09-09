@@ -608,25 +608,27 @@ void UpdateGameplayScreen(void)
         userWantsClearGrid = false;
         memset( sgMainGrid.tiles, 0, sizeof(Tile) * sgMainGrid.numTiles.x * sgMainGrid.numTiles.y);
         memset( sgUpdates.tiles, 0, sizeof(Tile) * sgUpdates.numTiles.x * sgUpdates.numTiles.y);
+        sgMainGrid.active = 0;
     }
     else{
         for(int i=0; i<sgMainGrid.numTiles.x; i++){
             for(int j=0; j<sgMainGrid.numTiles.y; j++){
 
                 // Propagate Updates to MainGrid
-                // sgMainGrid.tiles[i][j].alive = sgUpdates.tiles[i][j].alive;
-                // sgMainGrid.tiles[i][j].neighbors = GetNeighborsEx(i, j, &sgUpdates);
-                sgMainGrid.tiles[i][j] = {
-                    sgUpdates.tiles[i][j].alive,
-                    GetNeighborsEx(i, j, &sgUpdates)
-                };
+                sgMainGrid.tiles[i][j].alive = sgUpdates.tiles[i][j].alive;
+                sgMainGrid.tiles[i][j].neighbors = GetNeighborsEx(i, j, &sgUpdates);
                 sgMainGrid.active = (sgMainGrid.tiles[i][j].alive == true ? sgMainGrid.active+1 : sgMainGrid.active);
 
                 // Check for the last tile that the mouse hovered-over.
                 if(isMouseOnGrid){
                     // Only update if the current tile does not match the recorded tile location.
                     if( (tileLastHovered.x != i) || (tileLastHovered.y != j) ){
-                        Rectangle tile = (Rectangle){ (sgMainGrid.rect.x + (i * sgMainGrid.tileSizePx )), (sgMainGrid.rect.y + (j * sgMainGrid.tileSizePx)), sgMainGrid.tileSizePx, sgMainGrid.tileSizePx };
+                        Rectangle tile = (Rectangle){
+                                            (sgMainGrid.rect.x + (i * sgMainGrid.tileSizePx)),
+                                            (sgMainGrid.rect.y + (j * sgMainGrid.tileSizePx)),
+                                            sgMainGrid.tileSizePx,
+                                            sgMainGrid.tileSizePx
+                                        };
                         if(CheckCollisionPointRec(mousePosWorld, tile)){
                             tileLastHovered = (Vector2){i, j};
                         }

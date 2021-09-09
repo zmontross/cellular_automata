@@ -1,4 +1,4 @@
-.PHONY: all linux windows clean
+.PHONY: all linux windows clean re
 
 UNAME := $(shell uname -s)
 
@@ -24,3 +24,5 @@ ifeq ($(UNAME), Linux)
 else
 	$(MAKE) -f Makefile.windows clean
 endif
+
+re: clean all
