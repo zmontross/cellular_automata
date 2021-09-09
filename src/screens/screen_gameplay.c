@@ -680,15 +680,36 @@ void DrawGameplayScreen(void)
                 
                 
                 
-                if(isMouseOnGrid){
-
+                if(isMouseOnGrid && !foundMouse){
                     // Check for the last tile that the mouse hovered-over.
-                    if(!foundMouse){
-                        if(CheckCollisionPointRec(mousePosWorld, gridTileRect)){
-                            foundMouse = true;
-                            tileLastHovered = (Vector2){i, j};
-                        }
+                    if(CheckCollisionPointRec(mousePosWorld, gridTileRect)){
+                        foundMouse = true;
+                        tileLastHovered = (Vector2){i, j};
                     }
+                }
+
+                // Draw active tiles in view
+                if(sgMainGrid.tiles[i][j].alive == true){
+                    DrawRectangle(gridTileCoords.x, gridTileCoords.y, sgMainGrid.tileSizePx, sgMainGrid.tileSizePx, WHITE);
+                }
+
+                // if debug, show centered true/false text
+                if(guiShowNeighborNums && (sgMainGrid.tiles[i][j].neighbors != 0) && (camera.zoom > 0.45f)){
+                    Color debugTextColor = (sgMainGrid.tiles[i][j].alive == true ? LIME : RED);
+                    DrawText(TextFormat("%d", sgMainGrid.tiles[i][j].neighbors), gridTileCoords.x+8, gridTileCoords.y+8, 20, debugTextColor);
+                } // if debug
+            } // for j
+        } // for i
+
+        // Grid Border
+        DrawRectangleLinesEx((Rectangle){-4, -4, sgMainGrid.numTiles.x*sgMainGrid.tileSizePx+4, sgMainGrid.numTiles.y*sgMainGrid.tileSizePx+4}, (camera.zoom < 0.5f ? 12 : 8), GOLD);
+
+
+        // Render mouse halo, tool ghost
+        if(isMouseOnGrid){
+
+            for(int i=camFrustumTiles.ul.x; i<camFrustumTiles.lr.x; i++){
+                for(int j=camFrustumTiles.ul.y; j<camFrustumTiles.lr.y; j++){
 
                     // Draw highlight on tiles around cursor
                     if(CheckCollisionCircleRec(mousePosWorld, sgMainGrid.tileSizePx*CURSOR_GLOW_RADIUS, gridTileRect)){
@@ -713,28 +734,10 @@ void DrawGameplayScreen(void)
 
                         DrawRectangleLinesEx( gridTileRect, 1, Fade(lineColor, 1.00f - (0.1f * fadeFactor)) );
                     }
-                } // if mouse on grid
 
-                // Draw active tiles in view
-                if(sgMainGrid.tiles[i][j].alive == true){
-                    DrawRectangle(gridTileCoords.x, gridTileCoords.y, sgMainGrid.tileSizePx, sgMainGrid.tileSizePx, WHITE);
-                }
+                } // for j
+            } // for i
 
-                // if debug, show centered true/false text
-                if(guiShowNeighborNums && (sgMainGrid.tiles[i][j].neighbors != 0) && (camera.zoom > 0.45f)){
-                    Color debugTextColor = (sgMainGrid.tiles[i][j].alive == true ? LIME : RED);
-                    DrawText(TextFormat("%d", sgMainGrid.tiles[i][j].neighbors), gridTileCoords.x+8, gridTileCoords.y+8, 20, debugTextColor);
-                } // if debug
-            } // for j
-        } // for i
-
-
-        // Grid Border
-        DrawRectangleLinesEx((Rectangle){-4, -4, sgMainGrid.numTiles.x*sgMainGrid.tileSizePx+4, sgMainGrid.numTiles.y*sgMainGrid.tileSizePx+4}, (camera.zoom < 0.5f ? 12 : 8), GOLD);
-
-
-        // Render tool ghost
-        if(isMouseOnGrid){
             if(toolbox == TB_SINGLE){
                 Rectangle r = (Rectangle){
                     tileLastHovered.x * sgMainGrid.tileSizePx,
