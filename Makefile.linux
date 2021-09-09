@@ -114,7 +114,11 @@ CFLAGS += -Wall -std=c99 -D_DEFAULT_SOURCE -Wno-missing-braces
 ifeq ($(BUILD_MODE),DEBUG)
     CFLAGS += -g -O0
 else
-    CFLAGS += -s -O1
+    ifeq ($(CC),clang)
+        CFLAGS += -O1
+    else
+        CFLAGS += -s -O1
+    endif
 endif
 
 ifeq ($(RAYLIB_LIBTYPE),STATIC)
