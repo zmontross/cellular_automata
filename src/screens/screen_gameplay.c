@@ -429,10 +429,10 @@ void UpdateGameplayScreen(void)
 
     if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
         
-        tileLastClicked = tileLastHovered;
-        
         // If mouse not on grid, return.
         if( isMouseOnGrid && (toolbox != TB_NONE) ){
+
+            tileLastClicked = tileLastHovered;
 
             if(toolbox == TB_SINGLE){
                 sgUpdates.tiles[(int)tileLastClicked.x][(int)tileLastClicked.y].alive = !sgMainGrid.tiles[(int)tileLastClicked.x][(int)tileLastClicked.y].alive;
@@ -611,6 +611,8 @@ void DrawGameplayScreen(void)
                     }
                 }
 
+                
+                
                 // Draw active tiles in view
                 if(sgMainGrid.tiles[i][j].alive == true){
                     // DrawRectangle(gridTileCoords.x, gridTileCoords.y, sgMainGrid.tileSizePx, sgMainGrid.tileSizePx, WHITE);
@@ -634,6 +636,26 @@ void DrawGameplayScreen(void)
                     // DrawTriangle(c.ll, c.lr, c.ur, WHITE);
                     // DrawRectangle(c.ul.x + 4, c.ul.y + 4, sgMainGrid.tileSizePx - 8, sgMainGrid.tileSizePx - 8, GRAY);
 
+                }
+                else{
+
+                    Corners c = (Corners){
+                        (Vector2){ gridTileCoords.x, gridTileCoords.y },
+                        (Vector2){ gridTileCoords.x + sgMainGrid.tileSizePx, gridTileCoords.y },
+                        (Vector2){ gridTileCoords.x, gridTileCoords.y + sgMainGrid.tileSizePx },
+                        (Vector2){ gridTileCoords.x + sgMainGrid.tileSizePx, gridTileCoords.y + sgMainGrid.tileSizePx }
+                    };
+
+                    // DrawTriangle(c.ll, c.ur, c.ul, DARKGRAY);
+                    DrawTriangle(c.ll, c.lr, c.ur, DARKGRAY);
+                    DrawRectangle(gridTileCoords.x, gridTileCoords.y, sgMainGrid.tileSizePx + 2, sgMainGrid.tileSizePx + 2, BLACK);
+
+                    // if((i%2 == 0) && (j%2=1)){
+                        
+                    // }
+                    // else{
+                        
+                    // }
                 }
 
                 // if debug, show centered true/false text
