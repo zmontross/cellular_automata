@@ -296,16 +296,15 @@ void UpdateGameplayScreen(void)
             .height = gd.bHeights.triq,
         };
 
-        
+        rectSimSpeed = (Rectangle){
+            .x = screen.width.half + gd.bHeights.quart,
+            .y = rectProg.y - gd.bHeights.triq - gd.margin*2,
+            .width = gd.bWidths.half,
+            .height = gd.bHeights.triq,
+        };    
     }
 
-    // TODO Speed buttons not showing when this is placed in above conditional; why??
-    rectSimSpeed = (Rectangle){
-        .x = screen.width.half + gd.bHeights.quart,
-        .y = rectProg.y - gd.bHeights.triq - gd.margin*2,
-        .width = gd.bWidths.half,
-        .height = gd.bHeights.triq,
-    };
+    
 
     // Pause / Set Sim Speed
     if(IsKeyPressed(KEY_SPACE)){
@@ -851,6 +850,8 @@ void DrawGameplayScreen(void)
     if (GuiButton(btnHelpRect, GuiIconText(RICON_HELP, NULL)) ) showHelpOverlay = !showHelpOverlay;
 
     // Simulation Speed Buttons
+    rectSimSpeed.x = screen.width.half + gd.bHeights.quart;
+    
     rectSimSpeed.x += rectSimSpeed.width + gd.margin;
     GuiSetState( (sc.simsPerCycle == SPC_STEP ? GUI_STATE_PRESSED : GUI_STATE_NORMAL) );
     if( GuiButton(rectSimSpeed, "Step") ){
