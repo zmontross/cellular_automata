@@ -375,9 +375,14 @@ void UpdateGameplayScreen(void)
 
     // Overlay Menu.
     if(IsKeyPressed(KEY_ESCAPE)){
-        // Action for ESCAPE
-        showMenuOverlay = !showMenuOverlay;
-        showExitConfirmation = false;
+        if((toolbox != TB_NONE) && !showMenuOverlay){
+            toolbox = TB_NONE;
+        }
+        else{
+            showMenuOverlay = !showMenuOverlay;
+            showExitConfirmation = false;
+        }
+        
     }
 
 
@@ -615,7 +620,6 @@ void DrawGameplayScreen(void)
                 
                 // Draw active tiles in view
                 if(sgMainGrid.tiles[i][j].alive == true){
-                    // DrawRectangle(gridTileCoords.x, gridTileCoords.y, sgMainGrid.tileSizePx, sgMainGrid.tileSizePx, WHITE);
 
                     Corners c = (Corners){
                         (Vector2){ gridTileCoords.x, gridTileCoords.y },
@@ -624,17 +628,10 @@ void DrawGameplayScreen(void)
                         (Vector2){ gridTileCoords.x + sgMainGrid.tileSizePx, gridTileCoords.y + sgMainGrid.tileSizePx }
                     };
 
+                    int edgeWidth = 4;
                     DrawTriangle(c.ll, c.ur, c.ul, WHITE);
                     DrawTriangle(c.ll, c.lr, c.ur, GRAY);                    
-                    DrawRectangle(gridTileCoords.x + 2, gridTileCoords.y + 2, sgMainGrid.tileSizePx - 4, sgMainGrid.tileSizePx - 4, LIGHTGRAY);
-
-                    // DrawTriangle(c.ll, c.ur, c.ul, YELLOW);
-                    // DrawTriangle(c.ll, c.lr, c.ur, ORANGE);                    
-                    // DrawRectangle(gridTileCoords.x + 4, gridTileCoords.y + 4, sgMainGrid.tileSizePx - 8, sgMainGrid.tileSizePx - 8, GOLD);
-
-                    // DrawTriangle(c.ll, c.ur, c.ul, DARKGRAY);
-                    // DrawTriangle(c.ll, c.lr, c.ur, WHITE);
-                    // DrawRectangle(c.ul.x + 4, c.ul.y + 4, sgMainGrid.tileSizePx - 8, sgMainGrid.tileSizePx - 8, GRAY);
+                    DrawRectangle(gridTileCoords.x + edgeWidth, gridTileCoords.y + edgeWidth, sgMainGrid.tileSizePx - (2*edgeWidth), sgMainGrid.tileSizePx - (2*edgeWidth), LIGHTGRAY);
 
                 }
                 else{
@@ -715,7 +712,10 @@ void DrawGameplayScreen(void)
                 } // for j
             } // for i
 
-            if(toolbox == TB_SINGLE){
+            if(toolbox == TB_NONE){
+
+            }
+            else if(toolbox == TB_SINGLE){
                 Rectangle r = (Rectangle){
                     tileLastHovered.x * sgMainGrid.tileSizePx,
                     tileLastHovered.y * sgMainGrid.tileSizePx,
@@ -807,7 +807,7 @@ void DrawGameplayScreen(void)
     GuiProgressBar(rectProg, NULL, NULL, (sc.frames==0? (float)sc.framesPerSim : (float)sc.frames ), 0.1, (float)sc.framesPerSim);
     GuiSetState( GUI_STATE_NORMAL );
 
-    // Clearn-Grid Button
+    // Clear-Grid Button
     if( GuiButton(btnClearGridRect, "Clear Grid")) userWantsClearGrid = true;
 
 
@@ -824,6 +824,14 @@ void DrawGameplayScreen(void)
     rectCheckbox.y += rectCheckbox.height + gd.margin;
     guiShowAlive = GuiCheckBox(rectCheckbox, "Show Live Tiles Count", guiShowAlive);
 
+    // Show FPS
+    if(guiShowFps) DrawFPS(20, 20);
+
+    // Show count of alive tiles.
+    if(guiShowAlive) DrawText(TextFormat("%d Alive", sgMainGrid.active), 20, 40, 20, GREEN);
+
+    // Show help (controls, etc)
+    if(showHelpOverlay) DrawHelpOverlay();
 
     // Pause Button
     GuiSetState( (sc.paused? GUI_STATE_PRESSED : GUI_STATE_NORMAL) );
@@ -876,14 +884,7 @@ void DrawGameplayScreen(void)
     GuiSetState( GUI_STATE_NORMAL );
 
 
-    // Show FPS
-    if(guiShowFps) DrawFPS(20, 20);
-
-    // Show count of alive tiles.
-    if(guiShowAlive) DrawText(TextFormat("%d Alive", sgMainGrid.active), 20, 40, 20, GREEN);
-
-    // Show help (controls, etc)
-    if(showHelpOverlay) DrawHelpOverlay();
+    
 
 
     // Toolbox Button
@@ -970,6 +971,7 @@ void DrawGameplayScreen(void)
 
         ToolProps* tpSwitch = NULL;           
         switch(toolbox){
+
             case TB_SINGLE:
                 tpSwitch = &tpSingle;
                 break;
