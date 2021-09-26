@@ -23,6 +23,10 @@
 *
 **********************************************************************************************/
 
+
+// TODO Randomize grid state
+// TODO check why user cannot add stuff to grid when at max sim speed
+
 #include <stdio.h>
 #include <string.h>
 
@@ -66,6 +70,7 @@ static bool showHelpOverlay;
 static bool showExitConfirmation;
 static bool userWantsClearGrid;
 
+static bool userWantsGridRandomState;
 
 static SimulationCounter sc;
 
@@ -120,6 +125,8 @@ Rectangle btnHelpRect;
 Rectangle rectSimSpeed;
 Rectangle view;
 
+Rectangle btnGridRandomRect;
+
 //----------------------------------------------------------------------------------
 // Gameplay Screen Functions Definition
 //----------------------------------------------------------------------------------
@@ -132,8 +139,8 @@ void InitGameplayScreen(void)
     isMouseOnGui = true;
     
     guiShowNeighborNums = false;
-    guiShowFps = false;
-    guiShowAlive = false;
+    guiShowFps = true;
+    guiShowAlive = true;
 
     guiCategorySelected = TCAT_SHIP;
     guiSimsPerCycleSelected = 0;
@@ -287,7 +294,14 @@ void UpdateGameplayScreen(void)
             .y = rectProg.y - gd.bHeights.triq - gd.margin*2,
             .width = gd.bWidths.half,
             .height = gd.bHeights.triq,
-        };    
+        };
+
+        btnGridRandomRect = (Rectangle){
+            .x = screen.width.full - gd.bWidths.quart - gd.margin*2,
+            .y = gd.margin*4 + gd.bWidths.quart,
+            .width = gd.bWidths.quart,
+            .height = gd.bWidths.quart
+        };
     }
 
     
@@ -532,6 +546,12 @@ void UpdateGameplayScreen(void)
         memset( grid.tiles, 0, sizeof(Tile) * grid.size.x * grid.size.y);
         memset( grid.updates, 0, sizeof(bool) * grid.size.x * grid.size.y);
     }
+    else if(userWantsGridRandomState){
+        userWantsGridRandomState = false;
+        // TODO initialize the entire grid to a random state.
+        memset( grid.tiles, 0, sizeof(Tile) * grid.size.x * grid.size.y);
+        memset( grid.updates, 0, sizeof(bool) * grid.size.x * grid.size.y);
+    }
     else{
         for(int i=0; i<grid.size.x; i++){
             for(int j=0; j<grid.size.y; j++){
@@ -577,86 +597,109 @@ void DrawGameplayScreen(void)
         camFrustumTiles.lr.x = (camFrustumTiles.lr.x > grid.size.x)? grid.size.x : camFrustumTiles.lr.x;
         camFrustumTiles.lr.y = (camFrustumTiles.lr.y > grid.size.y)? grid.size.y : camFrustumTiles.lr.y;
 
-        bool foundMouse = false;
+
+        // Draw Tiles.
+
+        Vector2 gridTileCoords = (Vector2){
+            grid.gfx.rect.x + (camFrustumTiles.ul.x * grid.gfx.tile_size_px),
+            grid.gfx.rect.y + (camFrustumTiles.ul.y * grid.gfx.tile_size_px)
+        };
+        
+        int row_pixel_increment;
+        int column_pixel_increment;
+
         for(int i=camFrustumTiles.ul.x; i<camFrustumTiles.lr.x; i++){
+                
+            row_pixel_increment = i * grid.gfx.tile_size_px;
+
             for(int j=camFrustumTiles.ul.y; j<camFrustumTiles.lr.y; j++){
 
-                Vector2 gridTileCoords = (Vector2){
-                    grid.gfx.rect.x + (i * grid.gfx.tile_size_px),
-                    grid.gfx.rect.y + (j * grid.gfx.tile_size_px)
-                };
+                column_pixel_increment = j * grid.gfx.tile_size_px;
 
-                if(isMouseOnGrid && !foundMouse){
-                    // Check for the last tile that the mouse hovered-over.
-                    Rectangle gridTileRect = (Rectangle){
-                        .x = gridTileCoords.x,
-                        .y = gridTileCoords.y,
-                        .width = grid.gfx.tile_size_px,
-                        .height = grid.gfx.tile_size_px
-                    };
+                gridTileCoords.x = grid.gfx.rect.x + row_pixel_increment;
+                gridTileCoords.y = grid.gfx.rect.y + column_pixel_increment;
 
-                    if(CheckCollisionPointRec(mousePosWorld, gridTileRect)){
-                        foundMouse = true;
-                        tileLastHovered = (Vector2){i, j};
-                    }
-                }
-
-                
-                
-                // Draw active tiles in view
                 if(grid.tiles[i][j].alive == true){
-
-                    // Corners c = (Corners){
-                    //     (Vector2){ gridTileCoords.x, gridTileCoords.y },
-                    //     (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y },
-                    //     (Vector2){ gridTileCoords.x, gridTileCoords.y + grid.gfx.tile_size_px },
-                    //     (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y + grid.gfx.tile_size_px }
-                    // };
 
                     Vector2 ul = (Vector2){ gridTileCoords.x, gridTileCoords.y };
                     Vector2 ur = (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y };
                     Vector2 ll = (Vector2){ gridTileCoords.x, gridTileCoords.y + grid.gfx.tile_size_px };
                     Vector2 lr = (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y + grid.gfx.tile_size_px };
+                    
+                    Rectangle r = (Rectangle){
+                        gridTileCoords.x + 4,
+                        gridTileCoords.y + 4,
+                        grid.gfx.tile_size_px - 8,
+                        grid.gfx.tile_size_px - 8
+                    };
 
-                    int edgeWidth = 4;
                     DrawTriangle(ll, ur, ul, WHITE);
-                    DrawTriangle(ll, lr, ur, GRAY);                    
-                    DrawRectangle(gridTileCoords.x + edgeWidth, gridTileCoords.y + edgeWidth, grid.gfx.tile_size_px - (2*edgeWidth), grid.gfx.tile_size_px - (2*edgeWidth), LIGHTGRAY);
-
+                    DrawTriangle(ll, lr, ur, GRAY);
+                    DrawRectangleRec(r, LIGHTGRAY);
                 }
                 else{
 
-                    // Corners c = (Corners){
-                    //     (Vector2){ gridTileCoords.x, gridTileCoords.y },
-                    //     (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y },
-                    //     (Vector2){ gridTileCoords.x, gridTileCoords.y + grid.gfx.tile_size_px },
-                    //     (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y + grid.gfx.tile_size_px }
-                    // };
+                    // TODO Draw *something* for an empty cell
 
-                    // Vector2 ul = (Vector2){ gridTileCoords.x, gridTileCoords.y };
-                    Vector2 ur = (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y };
-                    Vector2 ll = (Vector2){ gridTileCoords.x, gridTileCoords.y + grid.gfx.tile_size_px };
-                    Vector2 lr = (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y + grid.gfx.tile_size_px };
+                    // Vector2 ur = (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y };
+                    // Vector2 ll = (Vector2){ gridTileCoords.x, gridTileCoords.y + grid.gfx.tile_size_px };
+                    // Vector2 lr = (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y + grid.gfx.tile_size_px };
 
-                    // DrawTriangle(c.ll, c.ur, c.ul, DARKGRAY);
-                    DrawTriangle(ll, lr, ur, DARKGRAY);
-                    DrawRectangle(gridTileCoords.x, gridTileCoords.y, grid.gfx.tile_size_px + 2, grid.gfx.tile_size_px + 2, BLACK);
-
-                    // if((i%2 == 0) && (j%2=1)){
-                        
-                    // }
-                    // else{
-                        
-                    // }
+                    // // DrawTriangle(c.ll, c.ur, c.ul, DARKGRAY);
+                    // DrawTriangle(ll, lr, ur, DARKGRAY);
+                    // DrawRectangle(gridTileCoords.x, gridTileCoords.y, grid.gfx.tile_size_px + 2, grid.gfx.tile_size_px + 2, BLACK);
                 }
 
                 // if debug, show centered true/false text
                 if(guiShowNeighborNums && (grid.tiles[i][j].neighbors != 0) && (camera.zoom > 0.45f)){
                     Color color = (grid.tiles[i][j].alive == true ? LIME : RED);
                     DrawText(TextFormat("%d", grid.tiles[i][j].neighbors), gridTileCoords.x+8, gridTileCoords.y+8, 20, color);
-                } // if debug
+                }
+                
             } // for j
         } // for i
+
+
+        // Find mouse under tile.
+        if(isMouseOnGrid){
+
+            Vector2 gridTileCoords = (Vector2){
+                grid.gfx.rect.x + (camFrustumTiles.ul.x * grid.gfx.tile_size_px),
+                grid.gfx.rect.y + (camFrustumTiles.ul.y * grid.gfx.tile_size_px)
+            };
+            Rectangle gridTileRect = (Rectangle){
+                .x = gridTileCoords.x,
+                .y = gridTileCoords.y,
+                .width = grid.gfx.tile_size_px,
+                .height = grid.gfx.tile_size_px
+            };
+
+            int row_pixel_increment;
+            int column_pixel_increment;
+
+            for(int i=camFrustumTiles.ul.x; i<camFrustumTiles.lr.x; i++){
+                
+                row_pixel_increment = i * grid.gfx.tile_size_px;
+
+                for(int j=camFrustumTiles.ul.y; j<camFrustumTiles.lr.y; j++){
+
+                    column_pixel_increment = j * grid.gfx.tile_size_px;
+
+                    gridTileCoords.x = grid.gfx.rect.x + row_pixel_increment;
+                    gridTileCoords.y = grid.gfx.rect.y + column_pixel_increment;
+
+                    gridTileRect.x = gridTileCoords.x;
+                    gridTileRect.y = gridTileCoords.y;
+
+                    if(CheckCollisionPointRec(mousePosWorld, gridTileRect)){
+                        tileLastHovered = (Vector2){i, j};
+                        break;
+                    }
+                    
+                } // for j
+            } // for i
+        }
+
 
         // Grid Border
         DrawRectangleLinesEx((Rectangle){-4, -4, grid.size.x*grid.gfx.tile_size_px+4, grid.size.y*grid.gfx.tile_size_px+4}, (camera.zoom < 0.5f ? 12 : 8), GOLD);
@@ -881,7 +924,8 @@ void DrawGameplayScreen(void)
     GuiSetState( GUI_STATE_NORMAL );
 
 
-    
+    // Randomize Grid State Button
+    if (GuiButton(btnGridRandomRect, "!") ) userWantsGridRandomState = true;
 
 
     // Toolbox Button
