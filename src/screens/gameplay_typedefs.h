@@ -9,9 +9,8 @@
 extern "C" {            // Prevents name mangling of functions
 #endif
 
-#define DFLT_GRID_SIZE_X 1024
-#define DFLT_GRID_SIZE_Y 768
-#define DFLT_TILE_SIZE_PX 32 
+#define DEFAULT_TILE_COUNT 1000
+#define DEFAULT_TILE_SIZE_PX 32 
 
 #define TOOL_FADE_MIN 0.10f
 #define TOOL_FADE_MAX 0.90f
@@ -50,32 +49,26 @@ typedef struct SimulationCounter {
 
 enum SimulationsPerCycle { SPC_STEP=1, SPC_SLOW=2, SPC_MED=10, SPC_FAST=60 };
 
-
-
 typedef struct Tile {
     bool alive;
-    Color color;
     int neighbors;
 } Tile;
 
-typedef struct Corners {
-    Vector2 ul;
-    Vector2 ur;
-    Vector2 ll;
-    Vector2 lr;
-} Corners;
-
 typedef struct Grid {
-    Color color;
-    int tileSizePx;
-    Vector2 numTiles;
-    Vector2 posCenterPx;
-    Corners corners;
-    int active;
-    Rectangle rect;
-    Tile tiles[DFLT_GRID_SIZE_X][DFLT_GRID_SIZE_Y];
-} Grid;
+    struct size{
+        int x;
+        int y;
+    } size;
+    int num_alive;
+    Tile tiles[DEFAULT_TILE_COUNT][DEFAULT_TILE_COUNT];
+    bool updates[DEFAULT_TILE_COUNT][DEFAULT_TILE_COUNT];
 
+    struct gfx {
+        int tile_size_px;
+        Rectangle rect;
+        Vector2 center_px;
+    } gfx;
+} Grid;
 
 int GetNeighborsEx(int x, int y, Grid* grid);
 bool IsGridEdgeTile(int x, int y, Grid* grid);
@@ -94,7 +87,7 @@ int GetNeighborsEx(int x, int y, Grid* grid){
         // Left Edge
         xMin = 0;
     }
-    else if(x == grid->numTiles.x-1){
+    else if(x == grid->size.x-1){
         // Right Edge
         xMax = 0;
     }
@@ -103,7 +96,7 @@ int GetNeighborsEx(int x, int y, Grid* grid){
         // Top Edge
         yMin = 0;
     }
-    else if(y == grid->numTiles.y-1){
+    else if(y == grid->size.y-1){
         // Bottom Edge
         yMax = 0;
     }
@@ -112,7 +105,7 @@ int GetNeighborsEx(int x, int y, Grid* grid){
         for (int n = yMin; n <= yMax; n++){
             // Exclude tile-under-judgement
             if( !(m==0 && n==0) ){
-                numNeighbors += (grid->tiles[x+m][y+n].alive == true ? 1 : 0);
+                numNeighbors += (grid->updates[x+m][y+n] == true ? 1 : 0);
             }
 
         }
@@ -124,7 +117,7 @@ int GetNeighborsEx(int x, int y, Grid* grid){
 
 // Check if tile at position x,y is on the edge of the grid.
 bool IsGridEdgeTile(int x, int y, Grid* grid){
-    return ((x == 0 ? true : (x == grid->numTiles.x-1 ? true : false)) || (y == 0 ? true : (y == grid->numTiles.y-1 ? true : false)));
+    return ((x == 0 ? true : (x == grid->size.x-1 ? true : false)) || (y == 0 ? true : (y == grid->size.y-1 ? true : false)));
 } // end IsGridEdgeTile
 
 

@@ -99,8 +99,9 @@ static int toolType;
 static float toolFade;
 
 
-static Grid sgMainGrid;
-static Grid sgUpdates;
+// static Grid sgMainGrid;
+// static Grid sgUpdates;
+static Grid grid;
 
 static Vector2 tileLastClicked;
 static Vector2 tileLastHovered;
@@ -169,41 +170,26 @@ void InitGameplayScreen(void)
     sc.framesPerSim = sc.framesPerCycle / sc.simsPerCycle;
 
 
-    sgMainGrid = (Grid){ 0 };
-    sgMainGrid.tileSizePx = DFLT_TILE_SIZE_PX;
-    sgMainGrid.numTiles = (Vector2){ DFLT_GRID_SIZE_X, DFLT_GRID_SIZE_Y };
-    sgMainGrid.rect = (Rectangle){
-        0,
-        0,
-        (sgMainGrid.numTiles.x*sgMainGrid.tileSizePx),
-        (sgMainGrid.numTiles.y*sgMainGrid.tileSizePx)
-    };
-    sgMainGrid.posCenterPx = (Vector2){
-        sgMainGrid.rect.x + (sgMainGrid.tileSizePx * sgMainGrid.numTiles.x/2),
-        sgMainGrid.rect.y + (sgMainGrid.tileSizePx * sgMainGrid.numTiles.y/2)
-    };
-    sgMainGrid.active = 0;
-    sgMainGrid.color = DARKGRAY;
+    grid.size.x = DEFAULT_TILE_COUNT;
+    grid.size.y = DEFAULT_TILE_COUNT;
+    grid.num_alive = 0;
+    grid.gfx.tile_size_px = DEFAULT_TILE_SIZE_PX;
+    grid.gfx.rect.width = grid.gfx.tile_size_px * grid.size.x;
+    grid.gfx.rect.height = grid.gfx.tile_size_px * grid.size.y;
+    grid.gfx.center_px.x = grid.gfx.rect.width / 2;
+    grid.gfx.center_px.y = grid.gfx.rect.height / 2;
 
-    for(int i=0; i<sgMainGrid.numTiles.x; i++){
-        for(int j=0; j<sgMainGrid.numTiles.y; j++){
-            sgMainGrid.tiles[i][j].alive = false;
-            sgMainGrid.tiles[i][j].neighbors = 0;
-        }
-    }
-
-    sgUpdates = sgMainGrid;
 
     refreshCamera = true;
 
-    camera.target = sgMainGrid.posCenterPx;
+    camera.target = grid.gfx.center_px;
     camera.offset = (Vector2){ screen.width.half, screen.height.half };
     camera.zoom = ZOOM_DFLT;
 
     camFrustum.ul = (Vector2){ -64, -64 };
     camFrustum.lr = (Vector2){ screen.width.full+64, screen.height.full+64 };
 
-    tileLastHovered = (Vector2){sgMainGrid.numTiles.x/2, sgMainGrid.numTiles.y/2, };
+    tileLastHovered = (Vector2){grid.size.x/2, grid.size.y/2};
     tileLastClicked = tileLastHovered;
     
 } // end InitGameplayScreen()
@@ -244,7 +230,7 @@ void UpdateGameplayScreen(void)
 
     isMouseOnGui = showMenuOverlay | mouseBarTest | (showToolbox? mouseToolboxTest : false) | mouseMenuHelpTest;
 
-    isMouseOnGrid = (isMouseOnGui? false : CheckCollisionPointRec(GetScreenToWorld2D(mousePosScreen, camera), sgMainGrid.rect));
+    isMouseOnGrid = (isMouseOnGui? false : CheckCollisionPointRec(GetScreenToWorld2D(mousePosScreen, camera), grid.gfx.rect));
 
 
     // Accounts for resolution changes.
@@ -389,7 +375,7 @@ void UpdateGameplayScreen(void)
     
     if(IsKeyPressed(KEY_T)) {
         camera.zoom = ZOOM_DFLT;
-        camera.target = sgMainGrid.posCenterPx;
+        camera.target = grid.gfx.center_px;
     }
 
 
@@ -439,9 +425,9 @@ void UpdateGameplayScreen(void)
             tileLastClicked = tileLastHovered;
 
             if(toolbox == TB_SINGLE){
-                sgUpdates.tiles[(int)tileLastClicked.x][(int)tileLastClicked.y].alive = !sgMainGrid.tiles[(int)tileLastClicked.x][(int)tileLastClicked.y].alive;
+                grid.updates[(int)tileLastClicked.x][(int)tileLastClicked.y] = !grid.tiles[(int)tileLastClicked.x][(int)tileLastClicked.y].alive;
             }
-            else if(IsGridEdgeTile((int)tileLastClicked.x, (int)tileLastClicked.y, &sgMainGrid) == false){
+            else if(IsGridEdgeTile((int)tileLastClicked.x, (int)tileLastClicked.y, &grid) == false){
 
                 ToolProps* tpSwitch;
                 switch(toolbox){
@@ -503,7 +489,7 @@ void UpdateGameplayScreen(void)
                         break;
                 } // switch
 
-                UseTool(tileLastClicked, tpSwitch, toolType, &sgUpdates);
+                UseTool(tileLastClicked, tpSwitch, toolType, &grid);
             }
         } // Click
     }
@@ -518,21 +504,21 @@ void UpdateGameplayScreen(void)
 
             if(sc.simsPerCycle == SPC_STEP) sc.paused = true;
 
-            for(int i=0; i<sgMainGrid.numTiles.x; i++){
-                for(int j=0; j<sgMainGrid.numTiles.y; j++){
+            for(int i=0; i<grid.size.x; i++){
+                for(int j=0; j<grid.size.y; j++){
 
                     // Judge life/death based on neighbors/current-state
-                    if(sgMainGrid.tiles[i][j].alive == true){
+                    if(grid.tiles[i][j].alive == true){
                         // ALIVE
                         // If less than two neighbors, die. Underpopulation.
-                        if(sgMainGrid.tiles[i][j].neighbors < 2) sgUpdates.tiles[i][j].alive = false;
+                        if(grid.tiles[i][j].neighbors < 2) grid.updates[i][j] = false;
                         // If more than three neighbors, die. Overpopulation.
-                        if(sgMainGrid.tiles[i][j].neighbors > 3) sgUpdates.tiles[i][j].alive = false;
+                        if(grid.tiles[i][j].neighbors > 3) grid.updates[i][j] = false;
                     }
                     else{
                         // DEAD
                         // If exactly three neighbors, live. Reproduction.
-                        if(sgMainGrid.tiles[i][j].neighbors == 3) sgUpdates.tiles[i][j].alive = true;
+                        if(grid.tiles[i][j].neighbors == 3) grid.updates[i][j] = true;
                     }
                 }
             }
@@ -540,21 +526,21 @@ void UpdateGameplayScreen(void)
     }
 
     // Sync Grids
-    sgMainGrid.active = 0;
+    grid.num_alive = 0;
     if(userWantsClearGrid){
         userWantsClearGrid = false;
-        memset( sgMainGrid.tiles, 0, sizeof(Tile) * sgMainGrid.numTiles.x * sgMainGrid.numTiles.y);
-        memset( sgUpdates.tiles, 0, sizeof(Tile) * sgUpdates.numTiles.x * sgUpdates.numTiles.y);
-        sgMainGrid.active = 0;
+        memset( grid.tiles, 0, sizeof(Tile) * grid.size.x * grid.size.y);
+        memset( grid.updates, 0, sizeof(bool) * grid.size.x * grid.size.y);
     }
     else{
-        for(int i=0; i<sgMainGrid.numTiles.x; i++){
-            for(int j=0; j<sgMainGrid.numTiles.y; j++){
+        for(int i=0; i<grid.size.x; i++){
+            for(int j=0; j<grid.size.y; j++){
 
-                // Propagate Updates to MainGrid
-                sgMainGrid.tiles[i][j].alive = sgUpdates.tiles[i][j].alive;
-                sgMainGrid.tiles[i][j].neighbors = GetNeighborsEx(i, j, &sgUpdates);
-                sgMainGrid.active = (sgMainGrid.tiles[i][j].alive == true ? sgMainGrid.active+1 : sgMainGrid.active);                
+                grid.tiles[i][j].alive = grid.updates[i][j];
+                grid.tiles[i][j].neighbors = GetNeighborsEx(i, j, &grid);
+                if(grid.updates[i][j]){
+                    grid.num_alive++;
+                }
             } // for j
         } // for i
     }
@@ -580,24 +566,24 @@ void DrawGameplayScreen(void)
 
         Frustum camFrustumTiles;
 
-        camFrustumTiles.ul.x = (int)(camFrustumWorld.ul.x / sgMainGrid.tileSizePx);
-        camFrustumTiles.ul.y = (int)(camFrustumWorld.ul.y / sgMainGrid.tileSizePx);
-        camFrustumTiles.lr.x = (int)(camFrustumWorld.lr.x / sgMainGrid.tileSizePx);
-        camFrustumTiles.lr.y = (int)(camFrustumWorld.lr.y / sgMainGrid.tileSizePx);
+        camFrustumTiles.ul.x = (int)(camFrustumWorld.ul.x / grid.gfx.tile_size_px);
+        camFrustumTiles.ul.y = (int)(camFrustumWorld.ul.y / grid.gfx.tile_size_px);
+        camFrustumTiles.lr.x = (int)(camFrustumWorld.lr.x / grid.gfx.tile_size_px);
+        camFrustumTiles.lr.y = (int)(camFrustumWorld.lr.y / grid.gfx.tile_size_px);
 
         // Clamp values to grid boundaries.
         camFrustumTiles.ul.x = (camFrustumTiles.ul.x < 0)? 0 : camFrustumTiles.ul.x;
         camFrustumTiles.ul.y = (camFrustumTiles.ul.y < 0)? 0 : camFrustumTiles.ul.y;
-        camFrustumTiles.lr.x = (camFrustumTiles.lr.x > sgMainGrid.numTiles.x)? sgMainGrid.numTiles.x : camFrustumTiles.lr.x;
-        camFrustumTiles.lr.y = (camFrustumTiles.lr.y > sgMainGrid.numTiles.y)? sgMainGrid.numTiles.y : camFrustumTiles.lr.y;
+        camFrustumTiles.lr.x = (camFrustumTiles.lr.x > grid.size.x)? grid.size.x : camFrustumTiles.lr.x;
+        camFrustumTiles.lr.y = (camFrustumTiles.lr.y > grid.size.y)? grid.size.y : camFrustumTiles.lr.y;
 
         bool foundMouse = false;
         for(int i=camFrustumTiles.ul.x; i<camFrustumTiles.lr.x; i++){
             for(int j=camFrustumTiles.ul.y; j<camFrustumTiles.lr.y; j++){
 
                 Vector2 gridTileCoords = (Vector2){
-                    sgMainGrid.rect.x + (i * sgMainGrid.tileSizePx),
-                    sgMainGrid.rect.y + (j * sgMainGrid.tileSizePx)
+                    grid.gfx.rect.x + (i * grid.gfx.tile_size_px),
+                    grid.gfx.rect.y + (j * grid.gfx.tile_size_px)
                 };
 
                 if(isMouseOnGrid && !foundMouse){
@@ -605,8 +591,8 @@ void DrawGameplayScreen(void)
                     Rectangle gridTileRect = (Rectangle){
                         .x = gridTileCoords.x,
                         .y = gridTileCoords.y,
-                        .width = sgMainGrid.tileSizePx,
-                        .height = sgMainGrid.tileSizePx
+                        .width = grid.gfx.tile_size_px,
+                        .height = grid.gfx.tile_size_px
                     };
 
                     if(CheckCollisionPointRec(mousePosWorld, gridTileRect)){
@@ -618,33 +604,43 @@ void DrawGameplayScreen(void)
                 
                 
                 // Draw active tiles in view
-                if(sgMainGrid.tiles[i][j].alive == true){
+                if(grid.tiles[i][j].alive == true){
 
-                    Corners c = (Corners){
-                        (Vector2){ gridTileCoords.x, gridTileCoords.y },
-                        (Vector2){ gridTileCoords.x + sgMainGrid.tileSizePx, gridTileCoords.y },
-                        (Vector2){ gridTileCoords.x, gridTileCoords.y + sgMainGrid.tileSizePx },
-                        (Vector2){ gridTileCoords.x + sgMainGrid.tileSizePx, gridTileCoords.y + sgMainGrid.tileSizePx }
-                    };
+                    // Corners c = (Corners){
+                    //     (Vector2){ gridTileCoords.x, gridTileCoords.y },
+                    //     (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y },
+                    //     (Vector2){ gridTileCoords.x, gridTileCoords.y + grid.gfx.tile_size_px },
+                    //     (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y + grid.gfx.tile_size_px }
+                    // };
+
+                    Vector2 ul = (Vector2){ gridTileCoords.x, gridTileCoords.y };
+                    Vector2 ur = (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y };
+                    Vector2 ll = (Vector2){ gridTileCoords.x, gridTileCoords.y + grid.gfx.tile_size_px };
+                    Vector2 lr = (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y + grid.gfx.tile_size_px };
 
                     int edgeWidth = 4;
-                    DrawTriangle(c.ll, c.ur, c.ul, WHITE);
-                    DrawTriangle(c.ll, c.lr, c.ur, GRAY);                    
-                    DrawRectangle(gridTileCoords.x + edgeWidth, gridTileCoords.y + edgeWidth, sgMainGrid.tileSizePx - (2*edgeWidth), sgMainGrid.tileSizePx - (2*edgeWidth), LIGHTGRAY);
+                    DrawTriangle(ll, ur, ul, WHITE);
+                    DrawTriangle(ll, lr, ur, GRAY);                    
+                    DrawRectangle(gridTileCoords.x + edgeWidth, gridTileCoords.y + edgeWidth, grid.gfx.tile_size_px - (2*edgeWidth), grid.gfx.tile_size_px - (2*edgeWidth), LIGHTGRAY);
 
                 }
                 else{
 
-                    Corners c = (Corners){
-                        (Vector2){ gridTileCoords.x, gridTileCoords.y },
-                        (Vector2){ gridTileCoords.x + sgMainGrid.tileSizePx, gridTileCoords.y },
-                        (Vector2){ gridTileCoords.x, gridTileCoords.y + sgMainGrid.tileSizePx },
-                        (Vector2){ gridTileCoords.x + sgMainGrid.tileSizePx, gridTileCoords.y + sgMainGrid.tileSizePx }
-                    };
+                    // Corners c = (Corners){
+                    //     (Vector2){ gridTileCoords.x, gridTileCoords.y },
+                    //     (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y },
+                    //     (Vector2){ gridTileCoords.x, gridTileCoords.y + grid.gfx.tile_size_px },
+                    //     (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y + grid.gfx.tile_size_px }
+                    // };
+
+                    // Vector2 ul = (Vector2){ gridTileCoords.x, gridTileCoords.y };
+                    Vector2 ur = (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y };
+                    Vector2 ll = (Vector2){ gridTileCoords.x, gridTileCoords.y + grid.gfx.tile_size_px };
+                    Vector2 lr = (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y + grid.gfx.tile_size_px };
 
                     // DrawTriangle(c.ll, c.ur, c.ul, DARKGRAY);
-                    DrawTriangle(c.ll, c.lr, c.ur, DARKGRAY);
-                    DrawRectangle(gridTileCoords.x, gridTileCoords.y, sgMainGrid.tileSizePx + 2, sgMainGrid.tileSizePx + 2, BLACK);
+                    DrawTriangle(ll, lr, ur, DARKGRAY);
+                    DrawRectangle(gridTileCoords.x, gridTileCoords.y, grid.gfx.tile_size_px + 2, grid.gfx.tile_size_px + 2, BLACK);
 
                     // if((i%2 == 0) && (j%2=1)){
                         
@@ -655,15 +651,15 @@ void DrawGameplayScreen(void)
                 }
 
                 // if debug, show centered true/false text
-                if(guiShowNeighborNums && (sgMainGrid.tiles[i][j].neighbors != 0) && (camera.zoom > 0.45f)){
-                    Color debugTextColor = (sgMainGrid.tiles[i][j].alive == true ? LIME : RED);
-                    DrawText(TextFormat("%d", sgMainGrid.tiles[i][j].neighbors), gridTileCoords.x+8, gridTileCoords.y+8, 20, debugTextColor);
+                if(guiShowNeighborNums && (grid.tiles[i][j].neighbors != 0) && (camera.zoom > 0.45f)){
+                    Color color = (grid.tiles[i][j].alive == true ? LIME : RED);
+                    DrawText(TextFormat("%d", grid.tiles[i][j].neighbors), gridTileCoords.x+8, gridTileCoords.y+8, 20, color);
                 } // if debug
             } // for j
         } // for i
 
         // Grid Border
-        DrawRectangleLinesEx((Rectangle){-4, -4, sgMainGrid.numTiles.x*sgMainGrid.tileSizePx+4, sgMainGrid.numTiles.y*sgMainGrid.tileSizePx+4}, (camera.zoom < 0.5f ? 12 : 8), GOLD);
+        DrawRectangleLinesEx((Rectangle){-4, -4, grid.size.x*grid.gfx.tile_size_px+4, grid.size.y*grid.gfx.tile_size_px+4}, (camera.zoom < 0.5f ? 12 : 8), GOLD);
 
 
         // Render mouse halo, tool ghost
@@ -674,18 +670,18 @@ void DrawGameplayScreen(void)
                 for(int j=camFrustumTiles.ul.y; j<camFrustumTiles.lr.y; j++){
 
                     Vector2 gridTileCoords = (Vector2){
-                        sgMainGrid.rect.x + (i * sgMainGrid.tileSizePx),
-                        sgMainGrid.rect.y + (j * sgMainGrid.tileSizePx)
+                        grid.gfx.rect.x + (i * grid.gfx.tile_size_px),
+                        grid.gfx.rect.y + (j * grid.gfx.tile_size_px)
                     };
 
                     Rectangle gridTileRect = (Rectangle){
                         .x = gridTileCoords.x,
                         .y = gridTileCoords.y,
-                        .width = sgMainGrid.tileSizePx,
-                        .height = sgMainGrid.tileSizePx
+                        .width = grid.gfx.tile_size_px,
+                        .height = grid.gfx.tile_size_px
                     };
 
-                    if(CheckCollisionCircleRec(mousePosWorld, sgMainGrid.tileSizePx*CURSOR_GLOW_RADIUS, gridTileRect)){
+                    if(CheckCollisionCircleRec(mousePosWorld, grid.gfx.tile_size_px*CURSOR_GLOW_RADIUS, gridTileRect)){
 
                         int fadeFactor = 0;
                         int colorFactor = 0;
@@ -693,7 +689,7 @@ void DrawGameplayScreen(void)
                         Color lineColor = BLANK;
 
                         for(int k=1; k<=CURSOR_GLOW_RADIUS; k++){
-                            if(CheckCollisionCircleRec(mousePosWorld, k*sgMainGrid.tileSizePx, gridTileRect)){
+                            if(CheckCollisionCircleRec(mousePosWorld, k*grid.gfx.tile_size_px, gridTileRect)){
                                 // fadeFactor = k + GetRandomValue(-0.25f, 0.25f);
                                 fadeFactor = k + 0.25 * GetRandomValue(-1, 1);
                                 colorFactor = k * 100 / CURSOR_GLOW_RADIUS;
@@ -716,14 +712,14 @@ void DrawGameplayScreen(void)
             }
             else if(toolbox == TB_SINGLE){
                 Rectangle r = (Rectangle){
-                    tileLastHovered.x * sgMainGrid.tileSizePx,
-                    tileLastHovered.y * sgMainGrid.tileSizePx,
-                    sgMainGrid.tileSizePx,
-                    sgMainGrid.tileSizePx
+                    tileLastHovered.x * grid.gfx.tile_size_px,
+                    tileLastHovered.y * grid.gfx.tile_size_px,
+                    grid.gfx.tile_size_px,
+                    grid.gfx.tile_size_px
                 };
                 DrawRectangleRec(r, Fade(SKYBLUE, toolFade) );
             }
-            else if(IsGridEdgeTile((int)tileLastHovered.x, (int)tileLastHovered.y, &sgMainGrid) == false){
+            else if(IsGridEdgeTile((int)tileLastHovered.x, (int)tileLastHovered.y, &grid) == false){
                 ToolProps* tpSwitch;
                 switch(toolbox){
                     case TB_GLIDER:
@@ -784,7 +780,7 @@ void DrawGameplayScreen(void)
                         break;
                 } // switch
 
-                DrawTool(tileLastHovered, tpSwitch, toolType, &sgUpdates, Fade(SKYBLUE, toolFade));
+                DrawTool(tileLastHovered, tpSwitch, toolType, &grid, Fade(SKYBLUE, toolFade));
             }
         } // ismouseOnGrid
 
@@ -827,7 +823,7 @@ void DrawGameplayScreen(void)
     if(guiShowFps) DrawFPS(20, 20);
 
     // Show count of alive tiles.
-    if(guiShowAlive) DrawText(TextFormat("%d Alive", sgMainGrid.active), 20, 40, 20, GREEN);
+    if(guiShowAlive) DrawText(TextFormat("%d Alive", grid.num_alive), 20, 40, 20, GREEN);
 
     // Show help (controls, etc)
     if(showHelpOverlay) DrawHelpOverlay();

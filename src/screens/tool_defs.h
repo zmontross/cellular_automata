@@ -241,11 +241,11 @@ void UseTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid){
 
             while(string[i]){
                 if(string[i] == '1'){
-                    grid->tiles[col][row].alive = true;
+                    grid->updates[col][row]= true;
                     col++;
                 }
                 else if(string[i] == '0'){
-                    grid->tiles[col][row].alive = false;
+                    grid->updates[col][row] = false;
                     col++;
                 }
                 else{
@@ -263,11 +263,11 @@ void UseTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid){
             row = rowStart;
             while(string[i]){
                 if(string[i] == '1'){
-                    grid->tiles[col][row].alive = true;
+                    grid->updates[col][row] = true;
                     row++;
                 }
                 else if(string[i] == '0'){
-                    grid->tiles[col][row].alive = false;
+                    grid->updates[col][row] = false;
                     row++;
                 }
                 else{
@@ -285,11 +285,11 @@ void UseTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid){
             row = rowStart;
             while(string[i]){
                 if(string[i] == '1'){
-                    grid->tiles[col][row].alive = true;
+                    grid->updates[col][row] = true;
                     col--;
                 }
                 else if(string[i] == '0'){
-                    grid->tiles[col][row].alive = false;
+                    grid->updates[col][row] = false;
                     col--;
                 }
                 else{
@@ -307,11 +307,11 @@ void UseTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid){
             row = rowStart;
             while(string[i]){
                 if(string[i] == '1'){
-                    grid->tiles[col][row].alive = true;
+                    grid->updates[col][row] = true;
                     row--;
                 }
                 else if(string[i] == '0'){
-                    grid->tiles[col][row].alive = false;
+                    grid->updates[col][row] = false;
                     row--;
                 }
                 else{
@@ -336,7 +336,7 @@ void DrawTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid, Color co
     int colStart = 0;
     int rowStart = 0;
 
-    Rectangle r = (Rectangle){0, 0, grid->tileSizePx, grid->tileSizePx};
+    Rectangle r = (Rectangle){0, 0, grid->gfx.tile_size_px, grid->gfx.tile_size_px};
     
     switch(toolType){
         case TT_RIGHT:
@@ -349,12 +349,12 @@ void DrawTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid, Color co
                 r.y = row * r.height;
 
                 if(string[i] == '1'){
-                    //grid->tiles[col][row].alive = true;
+                    grid->tiles[col][row].alive = true;
                     DrawRectangleRec(r, color);
                     col++;
                 }
                 else if(string[i] == '0'){
-                    //grid->tiles[col][row].alive = false;
+                    grid->tiles[col][row].alive = false;
                     col++;
                 }
                 else{
@@ -375,12 +375,12 @@ void DrawTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid, Color co
                 r.y = row * r.height;
 
                 if(string[i] == '1'){
-                    //grid->tiles[col][row].alive = true;
+                    grid->tiles[col][row].alive = true;
                     DrawRectangleRec(r, color);
                     row++;
                 }
                 else if(string[i] == '0'){
-                    //grid->tiles[col][row].alive = false;
+                    grid->tiles[col][row].alive = false;
                     row++;
                 }
                 else{
@@ -400,12 +400,12 @@ void DrawTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid, Color co
                 r.x = col * r.width;
                 r.y = row * r.height;
                 if(string[i] == '1'){
-                    //grid->tiles[col][row].alive = true;
+                    grid->tiles[col][row].alive = true;
                     DrawRectangleRec(r, color);
                     col--;
                 }
                 else if(string[i] == '0'){
-                    //grid->tiles[col][row].alive = false;
+                    grid->tiles[col][row].alive = false;
                     col--;
                 }
                 else{
@@ -425,12 +425,12 @@ void DrawTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid, Color co
                 r.x = col * r.width;
                 r.y = row * r.height;
                 if(string[i] == '1'){
-                    //grid->tiles[col][row].alive = true;
+                    grid->tiles[col][row].alive = true;
                     DrawRectangleRec(r, color);
                     row--;
                 }
                 else if(string[i] == '0'){
-                    //grid->tiles[col][row].alive = false;
+                    grid->tiles[col][row].alive = false;
                     row--;
                 }
                 else{
