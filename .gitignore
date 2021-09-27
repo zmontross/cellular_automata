@@ -1,6 +1,7 @@
 *.o
 *.exe
 *.settings
+*.cellular_automata
 
 release/
 
