@@ -24,8 +24,6 @@
 **********************************************************************************************/
 
 
-// TODO Randomize grid state
-
 #include <stdio.h>
 #include <string.h>
 
@@ -390,17 +388,30 @@ void UpdateGameplayScreen(void)
 
 
     int scrollMovement = GetMouseWheelMove();
-    camera.zoom += (camera.zoom<=ZOOM_SENSITV_THRESHOLD? (scrollMovement*ZOOM_SENSITV_2) : (scrollMovement*ZOOM_SENSITV_1));
-    
+    // camera.zoom += (camera.zoom<=ZOOM_SENSITV_THRESHOLD? (scrollMovement*ZOOM_SENSITV_2) : (scrollMovement*ZOOM_SENSITV_1));
+
+    if(camera.zoom <= ZOOM_SENSITV_THRESHOLD_2){
+        camera.zoom += scrollMovement*ZOOM_SENSITV_3;
+    }
+    else if(camera.zoom <= ZOOM_SENSITV_THRESHOLD_1){
+        camera.zoom += scrollMovement*ZOOM_SENSITV_2;
+    }
+    else{
+        camera.zoom += scrollMovement*ZOOM_SENSITV_1;
+    }
+
+
     // Camera zoom is clamped to min/max values.
     if (camera.zoom > ZOOM_MAX) camera.zoom = ZOOM_MAX;
     else if (camera.zoom < ZOOM_MIN) camera.zoom = ZOOM_MIN;
 
     // If camera zoom is caught in dead-zone between sensitivities it is snapped to the threshold line.
-    if( (camera.zoom > ZOOM_SENSITV_THRESHOLD) && (camera.zoom <= (ZOOM_SENSITV_THRESHOLD+ZOOM_SENSITV_1-ZOOM_SENSITV_2)) ){
-        camera.zoom = ZOOM_SENSITV_THRESHOLD+ZOOM_SENSITV_1;
+    if( (camera.zoom > ZOOM_SENSITV_THRESHOLD_2) && (camera.zoom <= (ZOOM_SENSITV_THRESHOLD_2+ZOOM_SENSITV_1-ZOOM_SENSITV_1)) ){
+        camera.zoom = ZOOM_SENSITV_THRESHOLD_2+ZOOM_SENSITV_1;
     }
-    
+
+
+
     
     if( IsMouseButtonDown(MOUSE_RIGHT_BUTTON) ){
 
@@ -438,67 +449,7 @@ void UpdateGameplayScreen(void)
             }
             else if(IsGridEdgeTile(tileLastHovered.x, tileLastHovered.y, &grid) == false){
 
-                ToolProps* tpSwitch;
-                switch(toolbox){
-                    case TB_GLIDER:
-                        tpSwitch = &tpGlider;
-                        break;
-                    case TB_LWSHIP:
-                        tpSwitch = &tpLwSpaceship;
-                        break;
-                    case TB_MWSHIP:
-                        tpSwitch = &tpMwSpaceship;
-                        break;
-                    case TB_HWSHIP:
-                        tpSwitch = &tpHwSpaceship;
-                        break;
-
-                    case TB_BLOCK:
-                        tpSwitch = &tpBlock;
-                        break;
-                    case TB_BEEHIVE:
-                        tpSwitch = &tpBeehive;
-                        break;
-                    case TB_LOAF:
-                        tpSwitch = &tpLoaf;
-                        break;
-                    case TB_BOAT:
-                        tpSwitch = &tpBoat;
-                        break;
-                    case TB_TUB:
-                        tpSwitch = &tpTub;
-                        break;
-
-                    case TB_BLINKER:
-                        tpSwitch = &tpBlinker;
-                        break;
-                    case TB_TOAD:
-                        tpSwitch = &tpToad;
-                        break;
-                    case TB_BEACON:
-                        tpSwitch = &tpBeacon;
-                        break;
-                    case TB_PULSAR:
-                        tpSwitch = &tpPulsar;
-                        break;
-                    case TB_PENTADECATHLON:
-                        tpSwitch = &tpPentaDecathlon;
-                        break;
-
-                    case TB_GOSPER:
-                        tpSwitch = &tpGosper;
-                        break;
-                    case TB_RIPCONWAY:
-                        tpSwitch = &tpRipConway;
-                        break;
-
-                    default:
-                        // Default to Glider
-                        tpSwitch = &tpGlider;
-                        break;
-                } // switch
-
-                UseTool(tileLastHovered, tpSwitch, toolType, &grid);
+                UseTool(tileLastHovered, toolbox, toolType, &grid);
             }
         } // Click
     }
@@ -723,73 +674,14 @@ void DrawGameplayScreen(void)
                 DrawRectangleRec(r, Fade(SKYBLUE, toolFade) );
             }
             else if(IsGridEdgeTile(tileLastHovered.x, tileLastHovered.y, &grid) == false){
-                ToolProps* tpSwitch;
-                switch(toolbox){
-                    case TB_GLIDER:
-                        tpSwitch = &tpGlider;
-                        break;
-                    case TB_LWSHIP:
-                        tpSwitch = &tpLwSpaceship;
-                        break;
-                    case TB_MWSHIP:
-                        tpSwitch = &tpMwSpaceship;
-                        break;
-                    case TB_HWSHIP:
-                        tpSwitch = &tpHwSpaceship;
-                        break;
-
-                    case TB_BLOCK:
-                        tpSwitch = &tpBlock;
-                        break;
-                    case TB_BEEHIVE:
-                        tpSwitch = &tpBeehive;
-                        break;
-                    case TB_LOAF:
-                        tpSwitch = &tpLoaf;
-                        break;
-                    case TB_BOAT:
-                        tpSwitch = &tpBoat;
-                        break;
-                    case TB_TUB:
-                        tpSwitch = &tpTub;
-                        break;
-
-                    case TB_BLINKER:
-                        tpSwitch = &tpBlinker;
-                        break;
-                    case TB_TOAD:
-                        tpSwitch = &tpToad;
-                        break;
-                    case TB_BEACON:
-                        tpSwitch = &tpBeacon;
-                        break;
-                    case TB_PULSAR:
-                        tpSwitch = &tpPulsar;
-                        break;
-                    case TB_PENTADECATHLON:
-                        tpSwitch = &tpPentaDecathlon;
-                        break;
-
-                    case TB_GOSPER:
-                        tpSwitch = &tpGosper;
-                        break;
-                    case TB_RIPCONWAY:
-                        tpSwitch = &tpRipConway;
-                        break;
-
-                    default:
-                        // Default to Glider
-                        tpSwitch = &tpGlider;
-                        break;
-                } // switch
-
-                DrawTool(tileLastHovered, tpSwitch, toolType, &grid, Fade(SKYBLUE, toolFade));
+                
+                DrawTool(tileLastHovered, toolbox, toolType, &grid, Fade(SKYBLUE, toolFade));
             }
         } // ismouseOnGrid
         
 
         // Grid Border
-        DrawRectangleLinesEx((Rectangle){-4, -4, grid.size.x*grid.gfx.tile_size_px+4, grid.size.y*grid.gfx.tile_size_px+4}, (camera.zoom < 0.5f ? 12 : 8), GOLD);
+        DrawRectangleLinesEx((Rectangle){-32, -32, grid.size.x*grid.gfx.tile_size_px+64, grid.size.y*grid.gfx.tile_size_px+64}, 32, GOLD);
 
 
     EndMode2D();
@@ -977,89 +869,24 @@ void DrawGameplayScreen(void)
                 GuiSetState( GUI_STATE_NORMAL );
             }
         EndScissorMode();
-
-
-        ToolProps* tpSwitch = NULL;           
-        switch(toolbox){
-
-            case TB_SINGLE:
-                tpSwitch = &tpSingle;
-                break;
-
-            case TB_GLIDER:
-                tpSwitch = &tpGlider;
-                break;
-            case TB_LWSHIP:
-                tpSwitch = &tpLwSpaceship;
-                break;
-            case TB_MWSHIP:
-                tpSwitch = &tpMwSpaceship;
-                break;
-            case TB_HWSHIP:
-                tpSwitch = &tpHwSpaceship;
-                break;
-
-            case TB_BLOCK:
-                tpSwitch = &tpBlock;
-                break;
-            case TB_BEEHIVE:
-                tpSwitch = &tpBeehive;
-                break;
-            case TB_LOAF:
-                tpSwitch = &tpLoaf;
-                break;
-            case TB_BOAT:
-                tpSwitch = &tpBoat;
-                break;
-            case TB_TUB:
-                tpSwitch = &tpTub;
-                break;
-
-            case TB_BLINKER:
-                tpSwitch = &tpBlinker;
-                break;
-            case TB_TOAD:
-                tpSwitch = &tpToad;
-                break;
-            case TB_BEACON:
-                tpSwitch = &tpBeacon;
-                break;
-            case TB_PULSAR:
-                tpSwitch = &tpPulsar;
-                break;
-            case TB_PENTADECATHLON:
-                tpSwitch = &tpPentaDecathlon;
-                break;
-
-            case TB_GOSPER:
-                tpSwitch = &tpGosper;
-                break;
-            
-            case TB_RIPCONWAY:
-                tpSwitch = &tpRipConway;
-                break;
-
-            default:
-                // Default to Glider
-                tpSwitch = &tpGlider;
-                break;
-        } // switch
         
         int tileSizePx = 8; // pixels
 
         Rectangle rectToolPreview = (Rectangle){
             .x = panelRec.x,
-            .y = panelRec.y - (2 + tpSwitch->height)*tileSizePx,
+            .y = panelRec.y - 4*tileSizePx,
             .width = panelRec.width,
-            .height = (2 + tpSwitch->height)*tileSizePx
+            .height = (2 + 4)*tileSizePx
         };
 
         // Button is used for visual theme consistency; better than a solid-color rectangle.
         GuiButton(rectToolPreview, "");
         GuiSetState(GUI_STATE_NORMAL);
 
-        int toolPreviewPosX = rectToolPreview.x + (rectToolPreview.width/2) - (tpSwitch->width * tileSizePx / 2);
-        DrawToolPreview( toolPreviewPosX, rectToolPreview.y + tileSizePx, tileSizePx, tpSwitch, 0, SKYBLUE );
+        // TODO '4' was substituted because we no longer have a ToolProps reference... Fix this!
+
+        int toolPreviewPosX = rectToolPreview.x + (rectToolPreview.width/2) - (4 * tileSizePx / 2);
+        DrawToolPreview( toolPreviewPosX, rectToolPreview.y + tileSizePx, tileSizePx, toolbox, 0, SKYBLUE );
 
     }
     else{

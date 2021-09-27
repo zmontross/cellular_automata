@@ -176,9 +176,10 @@ const char* guiLabels_other[N_CAT_OTHER] = {
 
 
 int CycleToolType(int current, bool clockwise);
-void UseTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid);
-void DrawTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid, Color color);
-void DrawToolPreview(int posX, int posY, int tileSizePx, ToolProps* props, int toolType, Color color);
+ToolProps GetToolProp(int toolbox);
+void UseTool(TileCoord tile, int toolbox, int toolType, Grid* grid);
+void DrawTool(TileCoord tile, int toolbox, int toolType, Grid* grid, Color color);
+void DrawToolPreview(int posX, int posY, int tileSizePx, int toolbox, int toolType, Color color);
 
 
 // Cycles (or gives the next state) of the given tooltype.
@@ -221,10 +222,81 @@ int CycleToolType(int current, bool clockwise){
 
 } // end CycleToolType()
 
-//void UseTool(int x, int y, ToolProps* props, int toolType, Grid* grid){
-void UseTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid){
 
-    char* string = props->code;
+ToolProps GetToolProp(int toolbox){
+
+    ToolProps* tpSwitch;
+    
+    switch(toolbox){
+        case TB_GLIDER:
+            tpSwitch = &tpGlider;
+            break;
+        case TB_LWSHIP:
+            tpSwitch = &tpLwSpaceship;
+            break;
+        case TB_MWSHIP:
+            tpSwitch = &tpMwSpaceship;
+            break;
+        case TB_HWSHIP:
+            tpSwitch = &tpHwSpaceship;
+            break;
+
+        case TB_BLOCK:
+            tpSwitch = &tpBlock;
+            break;
+        case TB_BEEHIVE:
+            tpSwitch = &tpBeehive;
+            break;
+        case TB_LOAF:
+            tpSwitch = &tpLoaf;
+            break;
+        case TB_BOAT:
+            tpSwitch = &tpBoat;
+            break;
+        case TB_TUB:
+            tpSwitch = &tpTub;
+            break;
+
+        case TB_BLINKER:
+            tpSwitch = &tpBlinker;
+            break;
+        case TB_TOAD:
+            tpSwitch = &tpToad;
+            break;
+        case TB_BEACON:
+            tpSwitch = &tpBeacon;
+            break;
+        case TB_PULSAR:
+            tpSwitch = &tpPulsar;
+            break;
+        case TB_PENTADECATHLON:
+            tpSwitch = &tpPentaDecathlon;
+            break;
+
+        case TB_GOSPER:
+            tpSwitch = &tpGosper;
+            break;
+        case TB_RIPCONWAY:
+            tpSwitch = &tpRipConway;
+            break;
+
+        default:
+            // Default to Glider
+            tpSwitch = &tpGlider;
+            break;
+    } // switch
+
+    return *tpSwitch;
+
+} // end GetToolProp
+
+
+//void UseTool(int x, int y, ToolProps* props, int toolType, Grid* grid){
+void UseTool(TileCoord tile, int toolbox, int toolType, Grid* grid){
+
+    ToolProps props = GetToolProp(toolbox);
+
+    char* string = props.code;
     
     int i = 0;
     int col = 0;
@@ -234,8 +306,8 @@ void UseTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid){
     
     switch(toolType){
         case TT_RIGHT:
-            colStart = tile.x - (props->width)/2;
-            rowStart = tile.y - (props->height)/2;
+            colStart = tile.x - (props.width)/2;
+            rowStart = tile.y - (props.height)/2;
             col = colStart;
             row = rowStart;
 
@@ -257,8 +329,8 @@ void UseTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid){
             break;
 
         case TT_DOWN:
-            colStart = tile.x + (props->height)/2;
-            rowStart = tile.y - (props->width)/2;
+            colStart = tile.x + (props.height)/2;
+            rowStart = tile.y - (props.width)/2;
             col = colStart;
             row = rowStart;
             while(string[i]){
@@ -279,8 +351,8 @@ void UseTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid){
             break;
 
         case TT_LEFT:
-            colStart = tile.x + (props->width)/2;
-            rowStart = tile.y + (props->height)/2;
+            colStart = tile.x + (props.width)/2;
+            rowStart = tile.y + (props.height)/2;
             col = colStart;
             row = rowStart;
             while(string[i]){
@@ -301,8 +373,8 @@ void UseTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid){
             break;
 
         case TT_UP:
-            colStart = tile.x - (props->height)/2;
-            rowStart = tile.y + (props->width)/2;
+            colStart = tile.x - (props.height)/2;
+            rowStart = tile.y + (props.width)/2;
             col = colStart;
             row = rowStart;
             while(string[i]){
@@ -327,8 +399,11 @@ void UseTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid){
     }
 } // end UseTool()
 
-void DrawTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid, Color color){
-    char* string = props->code;
+void DrawTool(TileCoord tile, int toolbox, int toolType, Grid* grid, Color color){
+
+    ToolProps props = GetToolProp(toolbox);
+
+    char* string = props.code;
     
     int i = 0;
     int col = 0;
@@ -340,8 +415,8 @@ void DrawTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid, Color 
     
     switch(toolType){
         case TT_RIGHT:
-            colStart = tile.x - (props->width)/2;
-            rowStart = tile.y - (props->height)/2;
+            colStart = tile.x - (props.width)/2;
+            rowStart = tile.y - (props.height)/2;
             col = colStart;
             row = rowStart;
             while(string[i]){
@@ -364,8 +439,8 @@ void DrawTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid, Color 
             break;
 
         case TT_DOWN:
-            colStart = tile.x + (props->height)/2;   //3/2=1r1
-            rowStart = tile.y - (props->width)/2;  //16/2=8r0
+            colStart = tile.x + (props.height)/2;   //3/2=1r1
+            rowStart = tile.y - (props.width)/2;  //16/2=8r0
             col = colStart;
             row = rowStart;
             while(string[i]){
@@ -388,8 +463,8 @@ void DrawTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid, Color 
             break;
 
         case TT_LEFT:
-            colStart = tile.x + (props->width)/2;
-            rowStart = tile.y + (props->height)/2;
+            colStart = tile.x + (props.width)/2;
+            rowStart = tile.y + (props.height)/2;
             col = colStart;
             row = rowStart;
             while(string[i]){
@@ -411,8 +486,8 @@ void DrawTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid, Color 
             break;
 
         case TT_UP:
-            colStart = tile.x - (props->height)/2;
-            rowStart = tile.y + (props->width)/2;
+            colStart = tile.x - (props.height)/2;
+            rowStart = tile.y + (props.width)/2;
             col = colStart;
             row = rowStart;
             while(string[i]){
@@ -438,8 +513,11 @@ void DrawTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid, Color 
     }
 } // end DrawTool()
 
-void DrawToolPreview(int posX, int posY, int tileSizePx, ToolProps* props, int toolType, Color color){
-    char* string = props->code;
+void DrawToolPreview(int posX, int posY, int tileSizePx, int toolbox, int toolType, Color color){
+
+    ToolProps props = GetToolProp(toolbox);
+
+    char* string = props.code;
     
     int i = 0;
 

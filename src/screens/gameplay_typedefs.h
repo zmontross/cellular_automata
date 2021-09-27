@@ -19,12 +19,14 @@ extern "C" {            // Prevents name mangling of functions
 
 #define FRAME_COUNT_MAX 60
 
-#define ZOOM_MIN 0.10f
+#define ZOOM_MIN 0.050f
 #define ZOOM_MAX 1.00f
 #define ZOOM_DFLT 0.70f
-#define ZOOM_SENSITV_1 0.05f
+#define ZOOM_SENSITV_1 0.02f
 #define ZOOM_SENSITV_2 0.01f
-#define ZOOM_SENSITV_THRESHOLD 0.30f
+#define ZOOM_SENSITV_3 0.05f
+#define ZOOM_SENSITV_THRESHOLD_1 0.30f
+#define ZOOM_SENSITV_THRESHOLD_2 0.90f
 #define ZOOM_CAMTRG_SENSITV 2.0f
 
 #define DRAG_THRESHOLD 2
