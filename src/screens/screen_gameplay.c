@@ -232,9 +232,9 @@ void UpdateGameplayScreen(void)
 
     isMouseOnGui = showMenuOverlay | mouseBarTest | (showToolbox? mouseToolboxTest : false) | mouseMenuHelpTest;
 
-    isMouseOnGrid = (isMouseOnGui? false : CheckCollisionPointRec(GetScreenToWorld2D(mousePosScreen, camera), grid.gfx.rect));
+    isMouseOnGrid = (isMouseOnGui? false : CheckCollisionPointRec(mousePosWorld, grid.gfx.rect));
 
-    // tileLastHovered = GetTileLastHovered(mousePosWorld, &grid);
+    tileLastHovered = GetTileLastHovered(mousePosWorld, &grid);
 
     // Accounts for resolution changes.
     if(refreshCamera){
@@ -595,51 +595,6 @@ void DrawGameplayScreen(void)
         camFrustumTiles.lr.x = (camFrustumTiles.lr.x > grid.size.x)? grid.size.x : camFrustumTiles.lr.x;
         camFrustumTiles.lr.y = (camFrustumTiles.lr.y > grid.size.y)? grid.size.y : camFrustumTiles.lr.y;
 
-
-
-
-        
-        // Find mouse under tile.
-        if(isMouseOnGrid){
-
-            Vector2 gridTileCoords = (Vector2){
-                grid.gfx.rect.x + (camFrustumTiles.ul.x * grid.gfx.tile_size_px),
-                grid.gfx.rect.y + (camFrustumTiles.ul.y * grid.gfx.tile_size_px)
-            };
-            Rectangle gridTileRect = (Rectangle){
-                .x = gridTileCoords.x,
-                .y = gridTileCoords.y,
-                .width = grid.gfx.tile_size_px,
-                .height = grid.gfx.tile_size_px
-            };
-
-            int row_pixel_increment;
-            int column_pixel_increment;
-
-            for(int i=camFrustumTiles.ul.x; i<camFrustumTiles.lr.x; i++){
-                
-                row_pixel_increment = i * grid.gfx.tile_size_px;
-
-                for(int j=camFrustumTiles.ul.y; j<camFrustumTiles.lr.y; j++){
-
-                    column_pixel_increment = j * grid.gfx.tile_size_px;
-
-                    gridTileCoords.x = grid.gfx.rect.x + row_pixel_increment;
-                    gridTileCoords.y = grid.gfx.rect.y + column_pixel_increment;
-
-                    gridTileRect.x = gridTileCoords.x;
-                    gridTileRect.y = gridTileCoords.y;
-
-                    if(CheckCollisionPointRec(mousePosWorld, gridTileRect)){
-                        tileLastHovered.x = i;
-                        tileLastHovered.y = j;
-                        break;
-                    }
-                    
-                } // for j
-            } // for i
-        }
-        
 
 
         // Draw Tiles.

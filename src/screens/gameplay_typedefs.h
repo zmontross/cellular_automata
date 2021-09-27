@@ -160,10 +160,9 @@ TileCoord GetTileLastHovered(Vector2 mousePosWorld, Grid* grid){
         tc_px.y = mousePosWorld.y;
     }
 
-    
-    tc.x = (int)(tc_px.x / grid->size.x);
+    tc.x = (int)(tc_px.x / grid->gfx.tile_size_px);
 
-    tc.y = (int)(tc_px.y / grid->size.y);
+    tc.y = (int)(tc_px.y / grid->gfx.tile_size_px);
 
     return tc;
 
