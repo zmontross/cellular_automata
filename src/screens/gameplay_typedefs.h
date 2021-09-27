@@ -54,6 +54,11 @@ typedef struct Tile {
     int neighbors;
 } Tile;
 
+typedef struct TileCoord{
+    int x;
+    int y;
+} TileCoord;
+
 typedef struct Grid {
     struct size{
         int x;
@@ -72,7 +77,7 @@ typedef struct Grid {
 
 int GetNeighborsEx(int x, int y, Grid* grid);
 bool IsGridEdgeTile(int x, int y, Grid* grid);
-
+TileCoord GetTileLastHovered(Vector2 mousePosWorld, Grid* grid);
 
 int GetNeighborsEx(int x, int y, Grid* grid){
 
@@ -121,6 +126,48 @@ bool IsGridEdgeTile(int x, int y, Grid* grid){
 } // end IsGridEdgeTile
 
 
+TileCoord GetTileLastHovered(Vector2 mousePosWorld, Grid* grid){
+    TileCoord tc = (TileCoord){0, 0};
+    Vector2 tc_px = (Vector2){0.0f, 0.0f};
+
+    // Check if mouse position is within grid boundaries (in pixels)
+    // If yes, determine which tile is located at that positiion
+    // It is assumed that the grid is drawn at world-pixel-coord [0,0]
+    //  and all tiles are drawn at positive increments of x,y
+
+    int grid_max_size_x_px = grid->size.x * grid->gfx.tile_size_px;
+    int grid_max_size_y_px = grid->size.y * grid->gfx.tile_size_px;
+
+    // Find 'x'
+    if(mousePosWorld.x < 0.0f){
+        tc_px.x = 0.0f;
+    }
+    else if(mousePosWorld.x > grid_max_size_x_px){
+        tc_px.x = grid_max_size_x_px - 1;
+    }
+    else{
+        tc_px.x = mousePosWorld.x;
+    }
+
+    // Find 'y'
+    if(mousePosWorld.y < 0.0f){
+        tc_px.y = 0.0f;
+    }
+    else if(mousePosWorld.y > grid_max_size_y_px){
+        tc_px.y = grid_max_size_y_px - 1;
+    }
+    else{
+        tc_px.y = mousePosWorld.y;
+    }
+
+    
+    tc.x = (int)(tc_px.x / grid->size.x);
+
+    tc.y = (int)(tc_px.y / grid->size.y);
+
+    return tc;
+
+} // end GetTileLastHovered
 
 
 

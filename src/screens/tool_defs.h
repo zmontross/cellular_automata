@@ -176,8 +176,8 @@ const char* guiLabels_other[N_CAT_OTHER] = {
 
 
 int CycleToolType(int current, bool clockwise);
-void UseTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid);
-void DrawTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid, Color color);
+void UseTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid);
+void DrawTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid, Color color);
 void DrawToolPreview(int posX, int posY, int tileSizePx, ToolProps* props, int toolType, Color color);
 
 
@@ -222,7 +222,7 @@ int CycleToolType(int current, bool clockwise){
 } // end CycleToolType()
 
 //void UseTool(int x, int y, ToolProps* props, int toolType, Grid* grid){
-void UseTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid){
+void UseTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid){
 
     char* string = props->code;
     
@@ -327,7 +327,7 @@ void UseTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid){
     }
 } // end UseTool()
 
-void DrawTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid, Color color){
+void DrawTool(TileCoord tile, ToolProps* props, int toolType, Grid* grid, Color color){
     char* string = props->code;
     
     int i = 0;
@@ -349,12 +349,10 @@ void DrawTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid, Color co
                 r.y = row * r.height;
 
                 if(string[i] == '1'){
-                    grid->tiles[col][row].alive = true;
                     DrawRectangleRec(r, color);
                     col++;
                 }
                 else if(string[i] == '0'){
-                    grid->tiles[col][row].alive = false;
                     col++;
                 }
                 else{
@@ -375,12 +373,10 @@ void DrawTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid, Color co
                 r.y = row * r.height;
 
                 if(string[i] == '1'){
-                    grid->tiles[col][row].alive = true;
                     DrawRectangleRec(r, color);
                     row++;
                 }
                 else if(string[i] == '0'){
-                    grid->tiles[col][row].alive = false;
                     row++;
                 }
                 else{
@@ -400,12 +396,10 @@ void DrawTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid, Color co
                 r.x = col * r.width;
                 r.y = row * r.height;
                 if(string[i] == '1'){
-                    grid->tiles[col][row].alive = true;
                     DrawRectangleRec(r, color);
                     col--;
                 }
                 else if(string[i] == '0'){
-                    grid->tiles[col][row].alive = false;
                     col--;
                 }
                 else{
@@ -425,12 +419,10 @@ void DrawTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid, Color co
                 r.x = col * r.width;
                 r.y = row * r.height;
                 if(string[i] == '1'){
-                    grid->tiles[col][row].alive = true;
                     DrawRectangleRec(r, color);
                     row--;
                 }
                 else if(string[i] == '0'){
-                    grid->tiles[col][row].alive = false;
                     row--;
                 }
                 else{
@@ -440,7 +432,7 @@ void DrawTool(Vector2 tile, ToolProps* props, int toolType, Grid* grid, Color co
                 i++;
             }
             break;
-
+            
         default:
             break;
     }
