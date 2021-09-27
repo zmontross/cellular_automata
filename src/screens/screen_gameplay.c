@@ -534,7 +534,7 @@ void UpdateGameplayScreen(void)
         }
     }
 
-    // Sync Grids
+    // Sync Grids, or apply grid-wide changes.
     grid.num_alive = 0;
     if(userWantsClearGrid){
         userWantsClearGrid = false;
@@ -543,25 +543,37 @@ void UpdateGameplayScreen(void)
     }
     else if(userWantsGridRandomState){
         userWantsGridRandomState = false;
-        // TODO initialize the entire grid to a random state.
+        
+        sc.paused = true;
+
         memset( grid.tiles, 0, sizeof(Tile) * grid.size.x * grid.size.y);
         memset( grid.updates, 0, sizeof(bool) * grid.size.x * grid.size.y);
 
-        UseTool((TileCoord){grid.size.x/2, grid.size.y/2}, &tpBlinker, toolType, &grid);
-    }
-    else{
         for(int i=0; i<grid.size.x; i++){
             for(int j=0; j<grid.size.y; j++){
 
-                grid.tiles[i][j].alive = grid.updates[i][j];
-                grid.tiles[i][j].neighbors = GetNeighborsEx(i, j, &grid);
-                if(grid.updates[i][j]){
-                    grid.num_alive++;
+                if( GetRandomValue(1, 100) > 50){
+                    grid.updates[i][j] = true;
                 }
-
+                else{
+                    grid.updates[i][j] = false;
+                }
+                
             } // for j
         } // for i
     }
+    
+    for(int i=0; i<grid.size.x; i++){
+        for(int j=0; j<grid.size.y; j++){
+
+            grid.tiles[i][j].alive = grid.updates[i][j];
+            grid.tiles[i][j].neighbors = GetNeighborsEx(i, j, &grid);
+            if(grid.updates[i][j]){
+                grid.num_alive++;
+            }
+
+        } // for j
+    } // for i
     
 } // end UpdateGameplayScreen()
 
