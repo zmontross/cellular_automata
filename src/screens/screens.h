@@ -81,7 +81,7 @@ GameScreen prevScreen;
 
 const char* applicationName;
 
-const char* stylefile;
+const char* style_file;
 const char* settings_file;
 #define SETTINGS_DEFAULT "~resolution:1920x1080\n~fullscreen:n\n"
 

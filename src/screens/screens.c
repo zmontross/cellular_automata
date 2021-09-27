@@ -120,8 +120,8 @@ void UpdateGuiSizing(void){
         // GuiLoadStyle() comes from RayGui which isn't defined for main.c....
         // Attempting to do that was a trashfire....
         onStartup = false;
-        if(FileExists(stylefile))
-            GuiLoadStyle(stylefile);
+        if(FileExists(style_file))
+            GuiLoadStyle(style_file);
     }
 
     UpdateStruct_Screen(&screen);

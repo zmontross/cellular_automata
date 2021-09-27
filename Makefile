@@ -1,200 +1,28 @@
-#**************************************************************************************************
-#
-#   raylib makefile for Desktop platforms, Raspberry Pi, Android and HTML5
-#
-#   Copyright (c) 2013-2019 Ramon Santamaria (@raysan5)
-#
-#   This software is provided "as-is", without any express or implied warranty. In no event
-#   will the authors be held liable for any damages arising from the use of this software.
-#
-#   Permission is granted to anyone to use this software for any purpose, including commercial
-#   applications, and to alter it and redistribute it freely, subject to the following restrictions:
-#
-#     1. The origin of this software must not be misrepresented; you must not claim that you
-#     wrote the original software. If you use this software in a product, an acknowledgment
-#     in the product documentation would be appreciated but is not required.
-#
-#     2. Altered source versions must be plainly marked as such, and must not be misrepresented
-#     as being the original software.
-#
-#     3. This notice may not be removed or altered from any source distribution.
-#
-#**************************************************************************************************
+.PHONY: all linux windows clean re
 
+UNAME := $(shell uname -s)
 
-# # # # # # # # # # # # #
-#                       #
-#     PHONY TARGETS     #
-#                       #
-# # # # # # # # # # # # #
-
-.PHONY: all clean
-
-
-# # # # # # # # # # # # #
-#                       #
-#   PROJECT AND PATHS   #
-#                       #
-# # # # # # # # # # # # #
-
-# Define required raylib variables
-PROJECT_NAME       ?= cellular_automata
-RAYLIB_VERSION     ?= 3.8.0
-RAYLIB_PATH        ?= /usr/local
-
-RAYLIB_INSTALL_PATH   ?= /usr/local/lib
-RAYLIB_H_INSTALL_PATH ?= /usr/local/include
-
-PLATFORM_LINUX_INCLUDES ?= /usr/include
-
-# Define default C compiler: gcc
-# NOTE: define g++ compiler if using C++
-CC = clang
-
-# Define default make program
-MAKE = make
-
-# Define default options
-# One of PLATFORM_DESKTOP, PLATFORM_RPI, PLATFORM_ANDROID, PLATFORM_WEB
-PLATFORM           ?= PLATFORM_DESKTOP
-
-# Define all source files required
-PROJECT_SOURCE_FILES ?= \
-    main.c \
-    screens/screens.c \
-    screens/screen_logo.c \
-    screens/screen_options.c \
-    screens/screen_gameplay.c \
-    screens/screen_ending.c \
-    screens/screen_title.c
-
-# Define all object files from source files
-OBJS = $(patsubst %.c, %.o, $(PROJECT_SOURCE_FILES))
-
-# Library type used for raylib: STATIC (.a) or SHARED (.so/.dll)
-RAYLIB_LIBTYPE        ?= STATIC
-
-# Build mode for project: DEBUG or RELEASE
-BUILD_MODE            ?= RELEASE
-
-# Use external GLFW library instead of rglfw module
-# TODO: Review usage on Linux. Target version of choice. Switch on -lglfw or -lglfw3
-USE_EXTERNAL_GLFW     ?= FALSE
-
-# Determine PLATFORM_OS in case PLATFORM_DESKTOP selected
-PLATFORM_OS=LINUX
-export PATH := $(COMPILER_PATH):$(PATH)
-
-
-
-
-
-# # # # # # # # # # # # #
-#                       #
-#        CFLAGS         #
-#                       #
-# # # # # # # # # # # # #
-
-# Define compiler flags:
-#  -O1                  defines optimization level
-#  -g                   include debug information on compilation
-#  -s                   strip unnecessary data from build
-#  -Wall                turns on most, but not all, compiler warnings
-#  -std=c99             defines C language mode (standard C from 1999 revision)
-#  -std=gnu99           defines C language mode (GNU C from 1999 revision)
-#  -Wno-missing-braces  ignore invalid warning (GCC bug 53119)
-#  -D_DEFAULT_SOURCE    use with -std=c99 on Linux and PLATFORM_WEB, required for timespec
-# Additional flags for compiler (if desired)
-#CFLAGS += -Wextra -Wmissing-prototypes -Wstrict-prototypes
-CFLAGS += -Wall -std=c99 -D_DEFAULT_SOURCE -Wno-missing-braces
-ifeq ($(BUILD_MODE),DEBUG)
-    CFLAGS += -g -O0
-else
-    CFLAGS += -s -O1
-endif
-
-ifeq ($(RAYLIB_LIBTYPE),STATIC)
-    CFLAGS += -D_DEFAULT_SOURCE
-endif
-ifeq ($(RAYLIB_LIBTYPE),SHARED)
-    # Explicitly enable runtime link to libraylib.so
-    CFLAGS += -Wl,-rpath,$(EXAMPLE_RUNTIME_PATH)
-endif
-
-# # # # # # # # # # # # #
-#                       #
-#        INCLUDES       #
-#                       #
-# # # # # # # # # # # # #
-
-# Define include paths for required headers
-# NOTE: Several external required libraries (stb and others)
-INCLUDE_PATHS = -I$(PLATFORM_LINUX_INCLUDES)
-INCLUDE_PATHS += -I. -I$(RAYLIB_H_INSTALL_PATH) -I$(RAYLIB_INSTALL_PATH)
-
-
-# # # # # # # # # # # # #
-#                       #
-#        LDFLAGS        #
-#                       #
-# # # # # # # # # # # # #
-
-# Define library paths containing required libs.
-LDFLAGS = -L. -L$(RAYLIB_INSTALL_PATH)
-
-
-# # # # # # # # # # # # #
-#                       #
-#        LDLIBS         #
-#                       #
-# # # # # # # # # # # # #
-
-# Define any libraries required on linking
-# if you want to link libraries (libname.so or libname.a), use the -lname
-ifeq ($(PLATFORM_OS),LINUX)
-    # Libraries for Debian GNU/Linux desktop compiling
-    # NOTE: Required packages: libegl1-mesa-dev
-    LDLIBS = -lraylib -lGL -lm -lpthread -ldl -lrt
-    
-    # On X11 requires also below libraries
-    LDLIBS += -lX11
-    # NOTE: It seems additional libraries are not required any more, latest GLFW just dlopen them
-    #LDLIBS += -lXrandr -lXinerama -lXi -lXxf86vm -lXcursor
-    
-    # On Wayland windowing system, additional libraries requires
-    ifeq ($(USE_WAYLAND_DISPLAY),TRUE)
-        LDLIBS += -lwayland-client -lwayland-cursor -lwayland-egl -lxkbcommon
-    endif
-    # Explicit link to libc
-    ifeq ($(RAYLIB_LIBTYPE),SHARED)
-        LDLIBS += -lc
-    endif
-endif
-
-
-# # # # # # # # # # # # #
-#                       #
-#   MAKEFILE TARGETS    #
-#                       #
-# # # # # # # # # # # # #
-
-# Default target entry
-# NOTE: We call this Makefile target or Makefile.Android target
 all:
-	$(MAKE) $(PROJECT_NAME)
+ifeq ($(UNAME), Linux)
+	$(MAKE) -f Makefile.linux all
+else
+	$(MAKE) -f Makefile.windows all
+endif
 
-# Project target defined by PROJECT_NAME
-$(PROJECT_NAME): $(OBJS)
-	$(CC) -o $(PROJECT_NAME)$(EXT) $(OBJS) $(CFLAGS) $(INCLUDE_PATHS) $(LDFLAGS) $(LDLIBS) -D$(PLATFORM)
 
-# Compile source files
-# NOTE: This pattern will compile every module defined on $(OBJS)
-%.o: %.c
-	$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDE_PATHS) -D$(PLATFORM)
+linux:
+	$(MAKE) -f Makefile.linux all
+
+
+windows:
+	$(MAKE) -f Makefile.windows all
+
 
 clean:
-	find -type f -executable | xargs file -i | grep -E 'x-object|x-archive|x-sharedlib|x-executable' | cut -d ':' --complement -f 2- | xargs rm -fv
-	rm -fv ./*.o
-	@echo Cleaning done
+ifeq ($(UNAME), Linux)
+	$(MAKE) -f Makefile.linux clean
+else
+	$(MAKE) -f Makefile.windows clean
+endif
 
 re: clean all
