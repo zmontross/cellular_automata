@@ -28,6 +28,7 @@ extern "C" {            // Prevents name mangling of functions
 #define ZOOM_SENSITV_THRESHOLD_1 0.30f
 #define ZOOM_SENSITV_THRESHOLD_2 0.90f
 #define ZOOM_CAMTRG_SENSITV 2.0f
+#define ZOOM_RENDER_THRESHOLD 0.25f
 
 #define DRAG_THRESHOLD 2
 

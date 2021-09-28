@@ -58,7 +58,7 @@ typedef struct Frustum{
 typedef struct GuiData{
     Dimension bWidths;
     Dimension bHeights;
-    struct rects{               // <-- "I just want this fucking thing done"
+    struct rects{
         Rectangle bar;
         struct toolbox{
             Rectangle tool;
@@ -91,10 +91,6 @@ bool showToolboxRight;
 
 
 Screen screen;
-
-// Dimension bWidths;
-// Dimension bHeights;
-
 
 GuiData gd;
 

@@ -545,36 +545,70 @@ void DrawGameplayScreen(void)
                                     GetScreenToWorld2D(camFrustum.lr,camera)
                                 };
 
-        Frustum camFrustumTiles;
+        TileCoord frustum_upper_left;
+        TileCoord frustum_lower_right;
 
-        camFrustumTiles.ul.x = (int)(camFrustumWorld.ul.x / grid.gfx.tile_size_px);
-        camFrustumTiles.ul.y = (int)(camFrustumWorld.ul.y / grid.gfx.tile_size_px);
-        camFrustumTiles.lr.x = (int)(camFrustumWorld.lr.x / grid.gfx.tile_size_px);
-        camFrustumTiles.lr.y = (int)(camFrustumWorld.lr.y / grid.gfx.tile_size_px);
+        frustum_upper_left.x = camFrustumWorld.ul.x / grid.gfx.tile_size_px;
+        frustum_upper_left.y = camFrustumWorld.ul.y / grid.gfx.tile_size_px;
+        frustum_lower_right.x = camFrustumWorld.lr.x / grid.gfx.tile_size_px;
+        frustum_lower_right.y = camFrustumWorld.lr.y / grid.gfx.tile_size_px;
 
         // Clamp values to grid boundaries.
-        camFrustumTiles.ul.x = (camFrustumTiles.ul.x < 0)? 0 : camFrustumTiles.ul.x;
-        camFrustumTiles.ul.y = (camFrustumTiles.ul.y < 0)? 0 : camFrustumTiles.ul.y;
-        camFrustumTiles.lr.x = (camFrustumTiles.lr.x > grid.size.x)? grid.size.x : camFrustumTiles.lr.x;
-        camFrustumTiles.lr.y = (camFrustumTiles.lr.y > grid.size.y)? grid.size.y : camFrustumTiles.lr.y;
+        frustum_upper_left.x = (frustum_upper_left.x < 0)? 0 : frustum_upper_left.x;
+        frustum_upper_left.y = (frustum_upper_left.y < 0)? 0 : frustum_upper_left.y;
+        frustum_lower_right.x = (frustum_lower_right.x > grid.size.x)? grid.size.x : frustum_lower_right.x;
+        frustum_lower_right.y = (frustum_lower_right.y > grid.size.y)? grid.size.y : frustum_lower_right.y;
 
+
+        // Variables re-used for several following loop-blocks
+        Vector2 gridTileCoords;
+        int row_pixel_increment;
+        int column_pixel_increment;
+
+
+
+        // Render grid lines between tiles.
+        
+        
+        // Vertical lines
+        for(int i=frustum_upper_left.x; i<frustum_lower_right.x; i++){
+
+            if( i%8 == 0 ){
+                DrawLine(
+                    i * grid.gfx.tile_size_px,
+                    frustum_upper_left.y * grid.gfx.tile_size_px,
+                    i * grid.gfx.tile_size_px,
+                    frustum_lower_right.y * grid.gfx.tile_size_px,
+                    DARKGRAY
+                );
+            }
+            
+            
+        } // for i
+
+        // Horizontal lines
+        for(int j=frustum_upper_left.y; j<frustum_lower_right.y; j++){
+
+            if( j%8 == 0 ){
+                DrawLine(
+                    frustum_upper_left.x * grid.gfx.tile_size_px,
+                    j * grid.gfx.tile_size_px,
+                    frustum_lower_right.x * grid.gfx.tile_size_px,
+                    j * grid.gfx.tile_size_px,
+                    DARKGRAY
+                );
+            }
+
+        } // for j
 
 
         // Draw Tiles.
 
-        Vector2 gridTileCoords = (Vector2){
-            grid.gfx.rect.x + (camFrustumTiles.ul.x * grid.gfx.tile_size_px),
-            grid.gfx.rect.y + (camFrustumTiles.ul.y * grid.gfx.tile_size_px)
-        };
-        
-        int row_pixel_increment;
-        int column_pixel_increment;
-
-        for(int i=camFrustumTiles.ul.x; i<camFrustumTiles.lr.x; i++){
+        for(int i=frustum_upper_left.x; i<frustum_lower_right.x; i++){
                 
             row_pixel_increment = i * grid.gfx.tile_size_px;
 
-            for(int j=camFrustumTiles.ul.y; j<camFrustumTiles.lr.y; j++){
+            for(int j=frustum_upper_left.y; j<frustum_lower_right.y; j++){
 
                 column_pixel_increment = j * grid.gfx.tile_size_px;
 
@@ -583,27 +617,45 @@ void DrawGameplayScreen(void)
 
                 if(grid.tiles[i][j].alive == true){
 
-                    Vector2 ul = (Vector2){ gridTileCoords.x, gridTileCoords.y };
-                    Vector2 ur = (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y };
-                    Vector2 ll = (Vector2){ gridTileCoords.x, gridTileCoords.y + grid.gfx.tile_size_px };
-                    Vector2 lr = (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y + grid.gfx.tile_size_px };
-                    
-                    Rectangle r = (Rectangle){
-                        gridTileCoords.x + 4,
-                        gridTileCoords.y + 4,
-                        grid.gfx.tile_size_px - 8,
-                        grid.gfx.tile_size_px - 8
-                    };
+                    if(camera.zoom > ZOOM_RENDER_THRESHOLD){
+                        
+                        // Show higher quality graphics at close range.
 
-                    DrawTriangle(ll, ur, ul, WHITE);
-                    DrawTriangle(ll, lr, ur, GRAY);
-                    DrawRectangleRec(r, LIGHTGRAY);
+                        Vector2 ul = (Vector2){ gridTileCoords.x, gridTileCoords.y };
+                        Vector2 ur = (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y };
+                        Vector2 ll = (Vector2){ gridTileCoords.x, gridTileCoords.y + grid.gfx.tile_size_px };
+                        Vector2 lr = (Vector2){ gridTileCoords.x + grid.gfx.tile_size_px, gridTileCoords.y + grid.gfx.tile_size_px };
+                        
+                        Rectangle r = (Rectangle){
+                            gridTileCoords.x + 4,
+                            gridTileCoords.y + 4,
+                            grid.gfx.tile_size_px - 8,
+                            grid.gfx.tile_size_px - 8
+                        };
+
+                        DrawTriangle(ll, ur, ul, WHITE);
+                        DrawTriangle(ll, lr, ur, GRAY);
+                        DrawRectangleRec(r, LIGHTGRAY);
+                    }
+                    else{
+
+                        // Show lower quality at farther range.
+                        DrawRectangle(
+                            gridTileCoords.x,
+                            gridTileCoords.y,
+                            grid.gfx.tile_size_px,
+                            grid.gfx.tile_size_px,
+                            LIGHTGRAY
+                        );
+                    }
                 }
                 else{
                     // TODO Draw *something* for an empty cell
+                    
+
                 }
 
-                if(guiShowNeighborNums && (grid.tiles[i][j].neighbors != 0) && (camera.zoom > 0.45f)){
+                if(guiShowNeighborNums && (grid.tiles[i][j].neighbors != 0) && (camera.zoom > ZOOM_RENDER_THRESHOLD)){
                     Color color = (grid.tiles[i][j].alive == true ? LIME : RED);
                     DrawText(TextFormat("%d", grid.tiles[i][j].neighbors), gridTileCoords.x+8, gridTileCoords.y+8, 20, color);
                 }
@@ -611,16 +663,19 @@ void DrawGameplayScreen(void)
             } // for j
         } // for i
 
+
+
+        
         
 
         
 
         // Render mouse halo, tool ghost
-        if(isMouseOnGrid){
+        if(isMouseOnGrid && (camera.zoom > ZOOM_RENDER_THRESHOLD)){
 
             // Mouse Halo
-            for(int i=camFrustumTiles.ul.x; i<camFrustumTiles.lr.x; i++){
-                for(int j=camFrustumTiles.ul.y; j<camFrustumTiles.lr.y; j++){
+            for(int i=frustum_upper_left.x; i<frustum_lower_right.x; i++){
+                for(int j=frustum_upper_left.y; j<frustum_lower_right.y; j++){
 
                     Vector2 gridTileCoords = (Vector2){
                         grid.gfx.rect.x + (i * grid.gfx.tile_size_px),
@@ -655,6 +710,7 @@ void DrawGameplayScreen(void)
                         lineColor.b = (baseColor.b - colorFactor) < 0.0f ? 0.0f : (baseColor.b - colorFactor);
 
                         DrawRectangleLinesEx( gridTileRect, 1, Fade(lineColor, 1.00f - (0.1f * fadeFactor)) );
+
                     }
 
                 } // for j
